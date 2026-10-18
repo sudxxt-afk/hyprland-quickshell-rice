@@ -90,11 +90,16 @@ function parseMeminfo(text) {
     return { totalKb: totalKb, availableKb: availableKb };
 }
 
-// Процент занятой памяти, округлённый до целого.
+// Процент занятой памяти, округлённый до целого, зажатый в 0..100.
 function memPercent(info) {
     if (!info || !(info.totalKb > 0))
         return 0;
-    return Math.round(100 * (1 - info.availableKb / info.totalKb));
+    var percent = Math.round(100 * (1 - info.availableKb / info.totalKb));
+    if (percent < 0)
+        percent = 0;
+    if (percent > 100)
+        percent = 100;
+    return percent;
 }
 
 // Температура: /sys/.../temp отдаёт миллиградусы. Не число → -1.

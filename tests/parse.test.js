@@ -48,3 +48,28 @@ test("formatDuration форматирует часы, минуты, секунд
   assert.strictEqual(api.formatDuration(45), "45s");
   assert.strictEqual(api.formatDuration(0), "0s");
 });
+// — граничные случаи, добавлены после ревью Task 2 —
+test("parseProcStat не путает cpu0 и cpu10 с агрегатной строкой", () => {
+  const only = "cpu0 1 2 3 4 5 6 7 8 9 10\ncpu10 1 2 3 4 5 6 7 8 9 10\n";
+  assert.strictEqual(api.parseProcStat(only), null);
+});
+test("parseProcStat не удваивает total из-за guest", () => {
+  const withGuest = "cpu  100 0 50 800 20 0 5 0 30 40\n";
+  assert.deepStrictEqual(api.parseProcStat(withGuest), { idle: 820, total: 975 });
+});
+test("memPercent зажат в 0..100", () => {
+  assert.strictEqual(api.memPercent({ totalKb: 1000, availableKb: 0 }), 100);
+  assert.strictEqual(api.memPercent({ totalKb: 1000, availableKb: 2000 }), 0);
+});
+test("formatDuration на границах", () => {
+  assert.strictEqual(api.formatDuration(59.9), "59s");
+  assert.strictEqual(api.formatDuration(60), "1m");
+  assert.strictEqual(api.formatDuration(3599), "59m");
+  assert.strictEqual(api.formatDuration(3600), "1h 0m");
+  assert.strictEqual(api.formatDuration(-5), "0s");
+  assert.strictEqual(api.formatDuration(NaN), "0s");
+  assert.strictEqual(api.formatDuration(Infinity), "0s");
+});
+test("parseMeminfo требует оба поля", () => {
+  assert.strictEqual(api.parseMeminfo("MemAvailable:   100 kB\n"), null);
+});

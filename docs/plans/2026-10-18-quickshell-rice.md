@@ -25,6 +25,7 @@
 - Температура: `/sys/class/thermal/thermal_zone0/temp`, значение в миллиградусах (50000 = 50 °C).
 - Приложения дока: `kitty`, `chromium-browser`, `nautilus`, `code`.
 - Запуск конфига: `qs -c rice`. Config discovery: `~/.config/quickshell/rice/shell.qml`.
+- IPC: `IpcHandler` с `target: "shell"` — `qs ipc call shell togglePanel <volume|wifi|bluetooth|calendar|battery|power>`, `qs ipc call shell closePanel`. Нужен, чтобы проверять панели командой, а не только мышью, и чтобы вешать их на клавиши. Проверка любой панели: `qs ipc call shell togglePanel <name>` дважды (открыть/закрыть).
 - `graphical-session.target` в этой сессии **неактивен** — сервис стартует явно из `hyprland.lua`.
 - Вне области: mako, hyprlock, hypridle, swayosd, wofi, hyprpaper, погода, заметки.
 - Коммит после каждой задачи; сообщения — conventional commits (`feat:`, `test:`, `docs:`, `chore:`).
@@ -139,6 +140,10 @@ function open(name: string): void
 function toggle(name: string, x: real): void   // x — центр модуля в координатах окна бара
 function close(): void
 // имена: "volume" | "wifi" | "bluetooth" | "calendar" | "battery" | "power"
+// IPC: IpcHandler { target: "shell" }
+//   togglePanel(name: string): void  -> PopupHost.toggle(name, lastX)
+//   closePanel(): void
+//   listPanels(): string             -> "volume,wifi,bluetooth,calendar,battery,power"
 ```
 
 `Proc` (singleton, `lib/Proc.qml`):
@@ -346,12 +351,14 @@ test("formatDuration форматирует часы, минуты, секунд
 
 - [ ] **Шаг 2: Запустить тест и убедиться, что падает**
 
-Run: `node --test tests/`
+Run: `node --test 'tests/**/*.test.js'`
 Ожидаемо: FAIL — файл `parse.js` не найден.
+
+**Грабли, проверено на этой машине:** `node --test tests/` не работает — Node 22 трактует каталог как позиционный entry-модуль и падает с `Cannot find module .../tests`. Использовать `node --test` (авто-дискавери) или glob в кавычках.
 
 - [ ] **Шаг 3: Реализовать `lib/parse.js`**
 
-Начать файл с `.pragma library`. Только объявления функций, без экспортов. Правила:
+Начать файл с `.pragma library`. **Важно:** `.pragma library` — директива QML, а не валидный JavaScript, поэтому тестовый загрузчик из шага 1 снимает её перед `new Function` (строка с `replace`). Без этого тест не запустится вообще — файл с прагмой не парсится как JS. Только объявления функций, без экспортов. Правила:
 - `parseProcStat`: первая строка, начинающаяся с `cpu ` (с пробелом, чтобы не поймать `cpu0`); поля — user, nice, system, idle, iowait, irq, softirq, steal; `idle = idle + iowait`; `total` — сумма этих восьми полей (**guest и guest_nice не включать** — они уже посчитаны в user); нераспознанное → `null`.
 - `cpuPercent(prev, cur)`: `deltaTotal <= 0` → `0`; иначе `100 * (deltaTotal - deltaIdle) / deltaTotal`, результат зажать в `0..100`.
 - `parseMeminfo`: строки `MemTotal:` и `MemAvailable:`, числа в kB.
@@ -361,7 +368,7 @@ Run: `node --test tests/`
 
 - [ ] **Шаг 4: Запустить тест и убедиться, что проходит**
 
-Run: `node --test tests/`
+Run: `node --test 'tests/**/*.test.js'`
 Ожидаемо: PASS, 9 тестов.
 
 - [ ] **Шаг 5: Коммит**
@@ -572,11 +579,11 @@ git add -A && git commit -m "feat: правая группа модулей ба
 
 **Interfaces:**
 - Consumes: `Theme`, `Icons`
-- Produces: `PopupHost` singleton c `current`/`opened`/`open(name)`/`toggle(name, x)`/`close()`; `PopupShell` — обёртка панели с сигнатурой `property string name`, `default property alias content`, слоты `anchors` наружу; имя панели `"power"`.
+- Produces: `PopupHost` singleton c `current`/`lastX`/`clockX`/`barWindow`/`opened`/`open(name)`/`toggle(name, x)`/`close()` и IPC-таргетом `shell`; `PopupShell` — обёртка панели с сигнатурой `property string name`, `default property alias content`, слоты `anchors` наружу; имя панели `"power"`.
 
 - [ ] **Шаг 1: `Panels/PopupHost.qml`**
 
-`pragma Singleton` + `Singleton`. Реализовать контракт из «Общих интерфейсов». `toggle(name, x)` — если `current == name`, закрыть; иначе открыть и запомнить `lastX` (для центрирования под модулем). `close()` — и никаких исключений при `current == ""`.
+`pragma Singleton` + `Singleton`. Реализовать контракт из «Общих интерфейсов». `toggle(name, x)` — если `current == name`, закрыть; иначе открыть и запомнить `lastX` (для центрирования под модулем). `close()` — и никаких исключений при `current == ""`. В этом же файле — `IpcHandler { target: "shell" }` с `togglePanel(name)`, `closePanel()`, `listPanels()`; типы аргументов и возвратов указывать явно, иначе функции не зарегистрируются.
 
 - [ ] **Шаг 2: `Panels/PopupShell.qml`**
 
@@ -598,7 +605,8 @@ git add -A && git commit -m "feat: правая группа модулей ба
 - `Esc` → закрылась;
 - клик в любом другом месте экрана → закрылась;
 - повторный клик по модулю → закрылась;
-- панель не выходит за левый/правый край экрана (проверить кликом по крайним модулям правой группы).
+- панель не выходит за левый/правый край экрана (проверить кликом по крайним модулям правой группы);
+- IPC работает без мыши: `qs ipc show` перечисляет таргет `shell`, `qs ipc call shell togglePanel power` открывает и закрывает панель, `qs ipc call shell listPanels` возвращает список имён.
 
 - [ ] **Шаг 6: Коммит**
 
@@ -1083,7 +1091,8 @@ git push -u origin main
 
 ## Приложение: проверочный чек-лист перед объявлением готовности
 
-- [ ] `node --test tests/` — PASS
+- [ ] `node --test 'tests/**/*.test.js'` — PASS
+- [ ] `qs ipc call shell togglePanel <name>` открывает и закрывает каждую из 6 панелей
 - [ ] `hyprctl layers` — есть `qs-bar`, `qs-card`, `qs-dock`, `qs-popup`
 - [ ] RSS Quickshell < 250 МБ (число записано в README)
 - [ ] Все 6 панелей: открытие, `Esc`, клик вне, повторный клик
