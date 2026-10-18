@@ -186,6 +186,19 @@ property real  lineWidth: 1.5
 - Consumes: нет
 - Produces: `Theme` с полным набором токенов (см. «Общие интерфейсы»); `Bar.qml` как `PanelWindow`; `qs -c rice` как команда запуска; `quickshell.service`; `hypr/scripts/qs-session.sh`.
 
+- [ ] **Шаг 0: Зафиксировать baseline live-конфигов в репозитории**
+
+Репозиторий должен быть источником правды, иначе правки Task 1 пойдут в пустоту:
+
+```bash
+mkdir -p ~/rice/hypr
+cp ~/.config/hypr/hyprland.lua ~/.config/hypr/hypridle.conf \
+   ~/.config/hypr/hyprlock.conf ~/.config/hypr/hyprpaper.conf ~/rice/hypr/
+mkdir -p ~/rice/hypr/scripts
+cp ~/.config/hypr/scripts/*.py ~/rice/hypr/scripts/ 2>/dev/null || true
+```
+Бэкапы `*.bak-*` не копировать — они уже в `.gitignore`. Проверить `git status`: должны появиться только сами конфиги, без бэкапов.
+
 - [ ] **Шаг 1: Установить пакет и зафиксировать факты о нём**
 
 ```bash
