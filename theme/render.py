@@ -78,7 +78,16 @@ class Palette:
     geometry: dict[str, str]
 
     def token(self, name: str) -> str:
-        """Значение токена из любой секции."""
+        """Значение токена из любой секции.
+
+        У цвета есть производная форма `<имя>.rgb` — тройка «R, G, B»
+        для `rgba(...)`.
+        """
+        if name.endswith(".rgb"):
+            try:
+                return rgb_triplet(self.colors[name[: -len(".rgb")]])
+            except KeyError as error:
+                raise PaletteError(f"неизвестный цвет: {name}") from error
         for section in (self.colors, self.fonts, self.geometry):
             if name in section:
                 return section[name]
@@ -132,6 +141,14 @@ def apply_block(text: str, begin: str, end: str, body: str) -> str:
     return "\n".join(lines[: starts[0] + 1] + body_lines + lines[ends[0] :])
 
 
+def rgb_triplet(color: str) -> str:
+    """`#1e1e2e` → `30, 30, 46` (для `rgba(...)`)."""
+    value = color.strip().lstrip("#")
+    if len(value) != 6 or any(ch not in "0123456789abcdefABCDEF" for ch in value):
+        raise PaletteError(f"не цвет: {color}")
+    return f"{int(value[0:2], 16)}, {int(value[2:4], 16)}, {int(value[4:6], 16)}"
+
+
 TOKEN_RE = re.compile(r"\{\{\s*([^{}\s]+)\s*\}\}")
 
 
@@ -145,10 +162,41 @@ def apply_template(template: str, palette: Palette) -> str:
 
 
 # ── Цели рендера ────────────────────────────────────────────────────
-# Наполняется по задачам плана: Task 2 — терминал, лаунчер, btop, cava;
-# Task 3 — starship, fastfetch, GTK; Task 4 — Wayle и виджеты;
-# Task 5 — цвета композитора.
-TARGETS: list[Target] = []
+# Task 2 — терминал, лаунчер, btop; Task 3 — starship, fastfetch, GTK;
+# Task 4 — Wayle и виджеты; Task 5 — цвета композитора.
+TEMPLATES = ROOT / "theme" / "templates"
+
+
+def _template(name: str) -> Callable[[Palette], str]:
+    """Тело цели: шаблон из theme/templates (токены подставит рендерер)."""
+
+    def body(_palette: Palette) -> str:
+        return (TEMPLATES / name).read_text()
+
+    return body
+
+
+TARGETS: list[Target] = [
+    # Терминал: цвета живут в отдельном theme.conf, kitty.conf подключает его.
+    Target(
+        path=HOME / ".config/kitty/theme.conf",
+        kind="template",
+        body=_template("kitty-theme.conf.in"),
+    ),
+    # Лаунчер: стиль целиком в палитре, блок между маркерами.
+    Target(
+        path=HOME / ".config/wofi/style.css",
+        kind="block",
+        markers=("/* palette:begin */", "/* palette:end */"),
+        body=_template("wofi-style.css.in"),
+    ),
+    # btop: тема отдельным файлом, btop.conf ссылается на неё по имени.
+    Target(
+        path=HOME / ".config/btop/themes/catppuccin-mocha.theme",
+        kind="template",
+        body=_template("btop-catppuccin-mocha.theme.in"),
+    ),
+]
 
 
 def _write_atomic(path: pathlib.Path, text: str) -> None:
@@ -160,13 +208,15 @@ def _write_atomic(path: pathlib.Path, text: str) -> None:
 
 def compute(target: Target, palette: Palette) -> str:
     """Новый текст одного файла (без записи)."""
-    current = target.path.read_text()
     if target.kind == "template":
+        # Шаблонный файл рис создаёт сам: текущего содержимого не нужно.
         return apply_template(target.body(palette), palette)
+
     if target.markers is None:
         raise PaletteError(f"блок без маркеров: {target.path}")
     begin, end = target.markers
-    return apply_block(current, begin, end, target.body(palette))
+    body = apply_template(target.body(palette), palette)
+    return apply_block(target.path.read_text(), begin, end, body)
 
 
 def render_targets(targets: list[Target], palette: Palette) -> list[tuple[Target, str]]:
@@ -177,10 +227,17 @@ def render_targets(targets: list[Target], palette: Palette) -> list[tuple[Target
     """
     planned: list[tuple[Target, str]] = []
     for target in targets:
-        if not target.path.exists():
-            raise PaletteError(f"нет файла цели: {target.path}")
+        if target.kind == "block" and not target.path.exists():
+            raise PaletteError(
+                f"нет файла цели: {target.path} (блок без файла не собрать)"
+            )
         planned.append((target, compute(target, palette)))
     return planned
+
+
+def _current_text(path: pathlib.Path) -> str:
+    """Текущее содержимое файла; нет файла — пусто (шаблонные цели создаются)."""
+    return path.read_text() if path.exists() else ""
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -189,11 +246,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--palette", type=pathlib.Path, default=PALETTE_FILE)
     parser.add_argument("--dry-run", action="store_true", help="ничего не писать")
     parser.add_argument("--check", action="store_true", help="только проверить")
+    parser.add_argument(
+        "--only",
+        nargs="+",
+        type=pathlib.Path,
+        default=None,
+        metavar="ПУТЬ",
+        help="работать только с этими целями (например, один файл)",
+    )
     args = parser.parse_args(argv)
+
+    targets = TARGETS
+    if args.only:
+        wanted = {path.resolve() for path in args.only}
+        targets = [target for target in TARGETS if target.path.resolve() in wanted]
 
     try:
         palette = load_palette(args.palette)
-        planned = render_targets(TARGETS, palette)
+        planned = render_targets(targets, palette)
     except (MarkerError, PaletteError) as error:
         print(f"ошибка: {error}", file=sys.stderr)
         return 1
@@ -201,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     drifted = [
         target
         for target, new_text in planned
-        if new_text != target.path.read_text()
+        if new_text != _current_text(target.path)
     ]
 
     if args.check:
@@ -220,7 +290,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Вторая фаза: всё посчитано без ошибок, можно писать.
     for target, new_text in planned:
-        if new_text != target.path.read_text():
+        if new_text != _current_text(target.path):
             _write_atomic(target.path, new_text)
             print(f"обновлено: {target.path}")
 

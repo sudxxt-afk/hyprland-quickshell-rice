@@ -1,0 +1,53 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  catppuccin-mocha.theme — тема btop
+#
+#  Файл рендерится из ~/rice/theme/palette.toml:
+#      python3 ~/rice/theme/render.py
+#  Правки здесь затираются при следующем рендере — меняйте палитру.
+#
+#  Подключается в ~/.config/btop/btop.conf строкой:
+#      color_theme = "catppuccin-mocha"
+# ═══════════════════════════════════════════════════════════════════════
+
+theme[main_bg]="{{ base }}"
+theme[main_fg]="{{ text }}"
+theme[title]="{{ text }}"
+theme[hi_fg]="{{ mauve }}"
+theme[selected_bg]="{{ surface1 }}"
+theme[selected_fg]="{{ text }}"
+theme[inactive_fg]="{{ overlay0 }}"
+theme[graph_text]="{{ blue }}"
+theme[meter_bg]="{{ surface0 }}"
+theme[proc_misc]="{{ mauve }}"
+theme[cpu_box]="{{ mauve }}"
+theme[mem_box]="{{ green }}"
+theme[net_box]="{{ red }}"
+theme[proc_box]="{{ peach }}"
+theme[div_line]="{{ surface0 }}"
+theme[temp_start]="{{ green }}"
+theme[temp_mid]="{{ yellow }}"
+theme[temp_end]="{{ red }}"
+theme[cpu_start]="{{ green }}"
+theme[cpu_mid]="{{ yellow }}"
+theme[cpu_end]="{{ red }}"
+theme[free_start]="{{ green }}"
+theme[free_mid]="{{ teal }}"
+theme[free_end]="{{ sky }}"
+theme[cached_start]="{{ sky }}"
+theme[cached_mid]="{{ lavender }}"
+theme[cached_end]="{{ mauve }}"
+theme[available_start]="{{ yellow }}"
+theme[available_mid]="{{ peach }}"
+theme[available_end]="{{ red }}"
+theme[used_start]="{{ teal }}"
+theme[used_mid]="{{ sky }}"
+theme[used_end]="{{ blue }}"
+theme[download_start]="{{ teal }}"
+theme[download_mid]="{{ sky }}"
+theme[download_end]="{{ blue }}"
+theme[upload_start]="{{ mauve }}"
+theme[upload_mid]="{{ pink }}"
+theme[upload_end]="{{ red }}"
+theme[process_start]="{{ teal }}"
+theme[process_mid]="{{ sky }}"
+theme[process_end]="{{ mauve }}"

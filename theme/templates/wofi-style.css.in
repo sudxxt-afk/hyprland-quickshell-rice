@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   wofi-style.css.in — блок стиля wofi (Catppuccin Mocha)
+
+   Рендерится из ~/rice/theme/palette.toml внутрь ~/.config/wofi/style.css
+   между маркерами palette:begin / palette:end:
+       python3 ~/rice/theme/render.py
+   Правки в живом файле затираются при следующем рендере.
+
+   имя.rgb — тройка «R, G, B» для rgba(...)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+window {
+    background-color: rgba({{ mantle.rgb }}, 0.88);
+    border: 2px solid rgba({{ mauve.rgb }}, 0.55);
+    border-radius: 16px;
+    font-family: "CozetteVector", "JetBrainsMono Nerd Font";
+    font-size: 14px;
+}
+
+#input {
+    margin: 10px 12px 6px 12px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba({{ surface0.rgb }}, 0.75);
+    color: {{ text }};
+    caret-color: {{ mauve }};
+}
+#input:focus {
+    border: none;
+}
+
+#outer-box {
+    padding-bottom: 10px;
+}
+
+#scroll {
+    margin: 0 12px;
+}
+
+#entry {
+    padding: 7px 10px;
+    border-radius: 10px;
+}
+#entry:selected {
+    background-color: rgba({{ mauve.rgb }}, 0.22);
+}
+#entry:selected #text {
+    color: {{ mauve }};
+}
+
+#text {
+    color: {{ text }};
+}
+
+#img {
+    margin-right: 8px;
+}
