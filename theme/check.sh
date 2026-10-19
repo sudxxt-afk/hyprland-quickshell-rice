@@ -37,13 +37,7 @@ DEFAULT_PATHS=(
 status=0
 
 # ── 1. Конфиги против палитры ────────────────────────────────────────
-# Явно названные пути — точечная проверка: рендерер сверяет только их.
-# Без аргументов — весь рис.
-if [ "$#" -gt 0 ]; then
-  if ! python3 "$ROOT/theme/render.py" --check --only "$@"; then
-    status=1
-  fi
-elif ! python3 "$ROOT/theme/render.py" --check; then
+if ! python3 "$ROOT/theme/render.py" --check; then
   status=1
 fi
 
