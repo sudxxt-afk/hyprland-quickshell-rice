@@ -41,7 +41,7 @@ hl.env("HYPRCURSOR_SIZE", "24")
 ------------------------
 hl.on("hyprland.start", function()
     hl.exec_cmd("hyprpaper")                       -- обои
-    hl.exec_cmd("waybar")                          -- бар
+    hl.exec_cmd("$HOME/.config/hypr/scripts/qs-session.sh") -- бар (Quickshell)
     hl.exec_cmd("mako")                            -- уведомления
     hl.exec_cmd("hypridle")                        -- простой / блокировка
     hl.exec_cmd("swayosd-server")                  -- OSD громкости и яркости
@@ -306,7 +306,7 @@ hl.bind("Print",                   hl.dsp.exec_cmd("hyprshot -m output -z -o ~/P
 
 -- буфер, бар, конфиг
 hl.bind(mainMod .. " + V",         hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"), { description = "история буфера" })
-hl.bind(mainMod .. " + W",         hl.dsp.exec_cmd("pkill -SIGUSR1 waybar"))
+hl.bind(mainMod .. " + W",         hl.dsp.exec_cmd("systemctl --user restart quickshell.service"))
 hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
 
 -- система

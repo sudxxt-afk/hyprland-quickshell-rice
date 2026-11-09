@@ -12,6 +12,7 @@
 
 ## Global Constraints
 
+- **Конвенция QML (проверено запуском):** каждый `.qml`-файл начинается с `import QtQuick`. Базовые типы и элементы — `color`, `Rectangle`, `Text`, `Canvas` — приходят именно оттуда; без этого импорта конфиг не загружается с ошибкой вида «`color` is not a type» / «`Rectangle` is not a type». Далее — только нужные `import Quickshell*` и `import qs`, `import qs.<Подпапка>`.
 - Стиль: Catppuccin Mocha. Точные цвета **только** из `Theme.qml` (§11 спеки). Никаких литеральных хексов в компонентах.
 - Палитра (verbatim): `base #1e1e2e`, `mantle #181825`, `crust #11111b`, `text #cdd6f4`, `subtext #a6adc8`, `overlay #6c7086`, `mauve #cba6f7`, `blue #89b4fa`, `red #f38ba8`, `green #a6e3a1`, `yellow #f9e2af`, `teal #94e2d5`, `peach #fab387`, `sky #89dceb`, `lavender #b4befe`, `surface0 #313244`, `surface1 #45475a`.
 - Геометрия (verbatim): бар высота `36`, отступ сверху `8`, по бокам `12`, радиус `14`; карточки отступ `16`, радиус `16`; панели радиус `16`, ширина `360`, зазор от бара `8`; док высота `56`, радиус `28`; радиус элементов `9`.

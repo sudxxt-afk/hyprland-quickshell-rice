@@ -1,0 +1,28 @@
+# ═══════════════════════════════════════════════════════════════════
+#  quickshell.service — user-unit для шелла Quickshell (rice)
+#
+#  Установка:
+#      cp systemd/quickshell.service ~/.config/systemd/user/
+#      systemctl --user daemon-reload
+#      systemctl --user start quickshell.service
+#
+#  ВАЖНО: имя бинарника уточнить сразу после установки пакета:
+#      rpm -ql quickshell | grep -E 'bin/'
+#  В документации Quickshell это `qs`, но в упаковке Fedora имя может
+#  отличаться (например `quickshell`). Если так — поправить путь в
+#  ExecStart ниже.
+# ═══════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=Quickshell (rice)
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/qs -c rice
+Restart=on-failure
+RestartSec=1
+Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target
