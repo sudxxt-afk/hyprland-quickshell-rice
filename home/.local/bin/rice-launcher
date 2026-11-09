@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# rice-launcher [режим] — открыть rofi в нужном режиме; повторное нажатие закрывает.
+# Режимы: drun run window filebrowser calc emoji clip power
+pkill -x rofi && exit 0
+exec rofi -show "${1:-drun}"

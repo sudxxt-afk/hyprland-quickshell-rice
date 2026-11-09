@@ -8,7 +8,7 @@ local mainMod = "SUPER"
 local terminal    = "kitty -1"
 local fileManager = "nautilus"
 local browser     = "chromium-browser --ozone-platform-hint=auto"
-local menu        = "wofi --show drun"
+local launcher    = os.getenv("HOME") .. "/.local/bin/rice-launcher"  -- rofi; Tab — другие режимы
 
 ------------------------------------------------------------------------
 -- 1. Освобождаем клавиши, где у end-4 другое действие
@@ -33,8 +33,8 @@ hl.bind(mainMod .. " + Q",     hl.dsp.exec_cmd(terminal),    { description = "Т
 hl.bind(mainMod .. " + E",     hl.dsp.exec_cmd(fileManager), { description = "Файловый менеджер" })
 hl.bind(mainMod .. " + B",     hl.dsp.exec_cmd(browser),     { description = "Браузер" })
 hl.bind(mainMod .. " + W",     hl.dsp.exec_cmd(browser),     { description = "Браузер (доп. клавиша)" })
-hl.bind(mainMod .. " + space", hl.dsp.exec_cmd(menu),        { description = "Лаунчер (wofi)" })
-hl.bind(mainMod .. " + R",     hl.dsp.exec_cmd(menu),        { description = "Лаунчер (wofi)" })
+hl.bind(mainMod .. " + space", hl.dsp.exec_cmd(launcher),    { description = "Лаунчер (rofi)" })
+hl.bind(mainMod .. " + R",     hl.dsp.exec_cmd(launcher .. " run"), { description = "Запуск команды (rofi)" })
 
 ------------------------------------------------------------------------
 -- 3. Окна и сессия
@@ -48,7 +48,7 @@ hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exit(),                              {
 -- 4. Буфер обмена
 ------------------------------------------------------------------------
 hl.bind(mainMod .. " + V",
-    hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"),
+    hl.dsp.exec_cmd(launcher .. " clip"),
     { description = "История буфера" })
 
 ------------------------------------------------------------------------

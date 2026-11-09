@@ -1,0 +1,14 @@
+/* Цвета rofi из палитры обоев — генерирует matugen (шаблон в ~/.config/matugen/templates/rofi). */
+* {
+    bg:           {{colors.surface.default.hex}}d9;
+    surface:      {{colors.surface_container_high.default.hex}}cc;
+    surface-alt:  {{colors.surface_container.default.hex}}99;
+    fg:           {{colors.on_surface.default.hex}};
+    muted:        {{colors.outline.default.hex}};
+    border:       {{colors.outline_variant.default.hex}};
+    accent:       {{colors.primary.default.hex}};
+    on-accent:    {{colors.on_primary.default.hex}};
+    selected:     {{colors.secondary_container.default.hex}};
+    on-selected:  {{colors.on_secondary_container.default.hex}};
+    urgent:       {{colors.error.default.hex}};
+}

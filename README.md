@@ -15,7 +15,7 @@
 | `home/.config/matugen/` | `~/.config/matugen/` | шаблоны палитры из обоев |
 | `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и уведомления |
 | `home/.config/quickshell/{cava,chaldea-glyph}` | `~/.config/quickshell/` | десктоп-виджеты |
-| `home/.local/bin/` | `~/.local/bin/` | `rice-telegram-theme`, `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
+| `home/.local/bin/` | `~/.local/bin/` | `rice-launcher`, `rice-telegram-theme`, `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
 | `ii/config.json` | `~/.config/illogical-impulse/config.json` | настройки ii (копией, не симлинком) |
 
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
@@ -112,3 +112,21 @@ post_hook `rice-telegram-theme` собирает `~/.local/share/rice/rice.tdesk
 Лежат в `~/Pictures/Wallpapers`. Селектор ii открывает `<папка картинок>/Wallpapers`,
 а при русской локали это `~/Изображения/Wallpapers` — там симлинк на `~/Pictures/Wallpapers`.
 Новые обои просто кидать туда; превью ii генерирует сам при открытии папки.
+
+## Лаунчер (rofi)
+
+| хоткей | режим |
+| --- | --- |
+| `Super + Space` | приложения; повторное нажатие закрывает |
+| `Super + R` | запуск команды |
+| `Super + V` | история буфера (cliphist) |
+
+Внутри `Tab` / `Shift + Tab` переключают режимы: apps · run · windows · files ·
+calc · emoji · clip · power. Строки — стрелками.
+
+- **calc** — `qalc`: выражения, единицы, валюты (`100 usd to rub`); Enter на результате копирует.
+- **emoji** — список из end-4; выбор копирует и сразу вставляет в окно.
+- **power** — блокировка, сон, выход, перезагрузка, выключение.
+
+Тема `rofi/rice.rasi` (стекло, скругления как у окон), цвета `rofi/colors.rasi` генерирует
+matugen. Скрипты режимов — `rofi/scripts/`. Из терминала: `rice-launcher <режим>`.

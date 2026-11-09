@@ -64,3 +64,7 @@ output_path = '~/.vscode/extensions/rice.rice-matugen-1.0.0/themes/matugen-dark.
 input_path = '~/.config/matugen/templates/telegram/palette.json'
 output_path = '~/.local/state/rice/telegram-palette.json'
 post_hook = '$HOME/.local/bin/rice-telegram-theme'
+
+[templates.rofi]
+input_path = '~/.config/matugen/templates/rofi/colors.rasi'
+output_path = '~/.config/rofi/colors.rasi'

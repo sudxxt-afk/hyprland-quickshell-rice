@@ -1,0 +1,112 @@
+/* Тема rofi: серо-белое стекло в духе риса. Цвета — colors.rasi (matugen).
+   Скругления и рамка совпадают с окнами Hyprland (rounding 18, border 2). */
+@import "colors.rasi"
+
+* {
+    font:             "JetBrains Mono 11";
+    background-color: transparent;
+    text-color:       @fg;
+    spacing:          0;
+}
+
+window {
+    location:         center;
+    width:            680px;
+    padding:          16px;
+    border:           2px;
+    border-radius:    18px;
+    border-color:     @border;
+    background-color: @bg;
+}
+
+mainbox {
+    spacing:  12px;
+    children: [ inputbar, message, listview, mode-switcher ];
+}
+
+inputbar {
+    padding:          10px 14px;
+    spacing:          12px;
+    border-radius:    12px;
+    background-color: @surface;
+    children:         [ prompt, entry, num-filtered-rows ];
+}
+prompt {
+    padding:          2px 10px;
+    border-radius:    8px;
+    background-color: @accent;
+    text-color:       @on-accent;
+}
+entry {
+    vertical-align:    0.5;
+    placeholder:       "поиск…";
+    placeholder-color: @muted;
+    cursor:            text;
+}
+num-filtered-rows {
+    vertical-align: 0.5;
+    text-color:     @muted;
+}
+
+message {
+    padding:          10px 14px;
+    border-radius:    12px;
+    background-color: @surface-alt;
+}
+textbox {
+    text-color: @fg;
+}
+
+listview {
+    lines:        8;
+    columns:      1;
+    fixed-height: true;
+    scrollbar:    false;
+    spacing:      4px;
+    cycle:        true;
+}
+element {
+    padding:       8px 12px;
+    spacing:       12px;
+    border-radius: 10px;
+}
+element normal.normal,
+element alternate.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+element normal.urgent,
+element alternate.urgent {
+    text-color: @urgent;
+}
+element selected.normal {
+    background-color: @selected;
+    text-color:       @on-selected;
+}
+element selected.urgent {
+    background-color: @urgent;
+    text-color:       @on-accent;
+}
+element-icon {
+    size:       26px;
+    text-color: inherit;
+}
+element-text {
+    vertical-align: 0.5;
+    text-color:     inherit;
+    highlight:      bold;
+}
+
+mode-switcher {
+    spacing: 6px;
+}
+button {
+    padding:          6px 0;
+    border-radius:    8px;
+    background-color: @surface-alt;
+    text-color:       @muted;
+}
+button selected {
+    background-color: @accent;
+    text-color:       @on-accent;
+}

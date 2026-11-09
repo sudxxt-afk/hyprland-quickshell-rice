@@ -80,7 +80,7 @@
       "workspaceZoom": 1.07
     },
     "thumbnailPath": "",
-    "wallpaperPath": "/home/kudensik/Pictures/Wallpapers/knights-of-sidonia.png",
+    "wallpaperPath": "/home/kudensik/Изображения/Wallpapers/mono_a_car_in_a_parking_garage.jpg",
     "widgets": {
       "clock": {
         "cookie": {
@@ -119,14 +119,14 @@
         "showOnlyWhenLocked": false,
         "style": "cookie",
         "styleLocked": "cookie",
-        "x": 675,
-        "y": 515
+        "x": 715,
+        "y": 525
       },
       "weather": {
         "enable": true,
         "placementStrategy": "free",
-        "x": 33.12109375,
-        "y": 65.9375
+        "x": 34.8125,
+        "y": 75.96875
       }
     }
   },
