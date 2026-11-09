@@ -11,11 +11,11 @@
 | в репо | в системе | что это |
 | --- | --- | --- |
 | `home/.config/hypr/custom/*.lua` | `~/.config/hypr/custom/` | мои настройки поверх end-4: ввод, рамки/тени/анимации, бинды, правила, hyprexpo |
-| `home/.config/hypr/*.conf`, `lock/`, `scripts/` | `~/.config/hypr/` | hyprlock, hypridle, hyprpaper, свои скрипты |
+| `home/.config/hypr/*.conf`, `lock/`, `scripts/` | `~/.config/hypr/` | hyprlock, hypridle, свои скрипты |
 | `home/.config/matugen/` | `~/.config/matugen/` | шаблоны палитры из обоев |
 | `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и уведомления |
 | `home/.config/quickshell/{cava,chaldea-glyph}` | `~/.config/quickshell/` | десктоп-виджеты |
-| `home/.local/bin/` | `~/.local/bin/` | `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
+| `home/.local/bin/` | `~/.local/bin/` | `rice-theme`, `rice-telegram-theme`, `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
 | `ii/config.json` | `~/.config/illogical-impulse/config.json` | настройки ii (копией, не симлинком) |
 
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
@@ -41,6 +41,7 @@
 | --- | --- |
 | `Super + `` ` `` | обзор рабочих столов (hyprexpo) |
 | `Super + Z` | выпадающий терминал (scratchpad) |
+| `Super + Alt + T` | сменить тему: обои + схема палитры (меню) |
 | `Alt + Tab` | к предыдущему окну (через столы), повторно — обратно |
 | щипок 4 пальцами | обзор рабочих столов (hyprexpo) |
 
@@ -93,3 +94,18 @@ end-4 не трогает `hypr/custom/`, но может перезаписат
 
 - Поставить/переставить расширение: `./rice vscode`.
 - После смены обоев новые цвета видны после `Developer: Reload Window`.
+
+## Темы одной командой
+
+`rice-theme` (или `Super + Alt + T`) — меню пресетов из `~/.config/rice/themes`
+(`имя | обои | схема`). Ставит обои, пишет схему в настройки ii и перекрашивает всё
+через matugen. `rice-theme <имя>` — сразу, `rice-theme list` — список.
+
+## Telegram
+
+matugen пишет роли палитры в `~/.local/state/rice/telegram-palette.json`, его
+post_hook `rice-telegram-theme` собирает `~/.local/share/rice/rice.tdesktop-theme`.
+Ключи Telegram — из walogram (MIT, `third_party/walogram.LICENSE`).
+
+Telegram сам файл не отслеживает: после смены темы открыть его заново —
+`/opt/Telegram/Telegram -- ~/.local/share/rice/rice.tdesktop-theme` → «Применить».

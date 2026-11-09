@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# rice-theme — сменить «тему» одним действием: обои + схема палитры.
+# Всё остальное (рамки, kitty, btop, fastfetch, starship, GTK, VS Code,
+# Telegram) перекрашивает matugen из этой палитры.
+#
+#   rice-theme            # меню (fuzzel)
+#   rice-theme <имя>      # сразу применить пресет
+#   rice-theme list       # список пресетов
+#
+# Пресеты: ~/.config/rice/themes
+#
+set -euo pipefail
+
+PRESETS="${XDG_CONFIG_HOME:-$HOME/.config}/rice/themes"
+II_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/illogical-impulse/config.json"
+SWITCHWALL="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/ii/scripts/colors/switchwall.sh"
+export ILLOGICAL_IMPULSE_VIRTUAL_ENV="${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-$HOME/.local/state/quickshell/.venv}"
+
+presets() { grep -v '^\s*#' "$PRESETS" | grep -v '^\s*$' | sed 's/\s*|\s*/|/g'; }
+die() { notify-send -a rice-theme "rice-theme" "$*" 2>/dev/null; echo "!! $*" >&2; exit 1; }
+
+case "${1:-}" in
+    list) presets | cut -d'|' -f1; exit 0 ;;
+    "")   name="$(presets | cut -d'|' -f1 | fuzzel --dmenu --prompt 'theme  ')" || exit 0 ;;
+    *)    name="$1" ;;
+esac
+
+line="$(presets | awk -F'|' -v n="$name" '$1 == n')"
+[[ -n "$line" ]] || die "Нет пресета «$name»"
+IFS='|' read -r _ wall scheme <<< "$line"
+wall="${wall/#\~/$HOME}"
+[[ -f "$wall" ]] || die "Нет файла обоев: $wall"
+
+# Схему пишем в настройки ii: иначе при следующей смене обоев из ii вернётся старая
+tmp="$(mktemp)"
+jq --arg t "$scheme" '.appearance.palette.type = $t' "$II_CONFIG" > "$tmp" && cat "$tmp" > "$II_CONFIG"
+rm -f "$tmp"
+
+bash "$SWITCHWALL" --image "$wall" --type "$scheme" >/dev/null 2>&1 || true
+
+# Рамки и тени читают палитру при загрузке конфига, kitty — по сигналу
+hyprctl reload >/dev/null
+pkill -USR1 -x kitty || true
+
+notify-send -a rice-theme "Тема: $name" "VS Code подхватит после Reload Window, Telegram — после повторного выбора темы" 2>/dev/null || true

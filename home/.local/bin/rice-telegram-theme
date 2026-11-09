@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""rice-telegram-theme — собрать тему Telegram из палитры matugen.
+
+Вход:  ~/.local/state/rice/telegram-palette.json (пишет matugen, шаблон telegram/palette.json)
+Выход: ~/.local/share/rice/rice.tdesktop-theme
+
+Варианты цветов считаются как в walogram: Lighter/Darker — каналы умножаются
+на (1 ± k/10), Alpha — цвет + две hex-цифры прозрачности. Фон чата — однотонный
+color0 (surface): на нём текст читается лучше, чем на обоях.
+"""
+import json, os, struct, zipfile, zlib
+from pathlib import Path
+
+HOME = Path.home()
+PALETTE = HOME / ".local/state/rice/telegram-palette.json"
+CONSTANTS = HOME / ".config/rice/telegram/constants.tdesktop-theme"
+OUT = HOME / ".local/share/rice/rice.tdesktop-theme"
+
+DIVISIONS = range(10, 100, 10)
+ALPHAS = ["00", "11", "22", "33", "44", "55", "66", "77", "88", "99", "aa", "bb", "cc", "dd", "ee", "ff"]  # ff нет в walogram, но на него ссылается callBg
+
+
+def rgb(h):
+    h = h.lstrip("#")
+    return [int(h[i:i + 2], 16) for i in (0, 2, 4)]
+
+
+def hexc(c):
+    return "#" + "".join(f"{max(0, min(255, v)):02x}" for v in c)
+
+
+def gencolors(pal):
+    out = []
+    for i in range(16):
+        base = pal[f"color{i}"]
+        c = rgb(base)
+        out.append(f"color{i}: {base};")
+        for d in DIVISIONS:
+            k = d // 10
+            out.append(f"colorLighter{i}_{d}: {hexc([v + v * k // 10 for v in c])};")
+            out.append(f"colorDarker{i}_{d}: {hexc([v - v * k // 10 for v in c])};")
+        for a in ALPHAS:
+            out.append(f"colorAlpha{i}_{a}: {base}{a};")
+        out.append("")
+    return "\n".join(out) + "\n"
+
+
+def solid_png(color, size=64):
+    r, g, b = rgb(color)
+    raw = b"".join(b"\x00" + bytes([r, g, b]) * size for _ in range(size))
+
+    def chunk(tag, data):
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
+
+
+def main():
+    pal = json.loads(PALETTE.read_text())
+    colors = gencolors(pal) + CONSTANTS.read_text()
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    tmp = OUT.with_suffix(".tmp")
+    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("colors.tdesktop-theme", colors)
+        z.writestr("tiled.png", solid_png(pal["color0"]))
+    os.replace(tmp, OUT)
+    print(OUT)
+
+
+if __name__ == "__main__":
+    main()

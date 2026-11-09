@@ -1,0 +1,7 @@
+# Пресеты для rice-theme:  имя | обои | схема matugen
+# Схемы: scheme-monochrome (серо-белая), scheme-content (оттенок обоев),
+#        scheme-fidelity (контрастнее), scheme-tonal-spot (мягкая), scheme-neutral
+sidonia-mono   | ~/Pictures/Wallpapers/knights-of-sidonia.png          | scheme-monochrome
+sidonia-color  | ~/Pictures/Wallpapers/knights-of-sidonia.png          | scheme-content
+waves-mono     | ~/Pictures/Wallpapers/catppuccin/dark-waves.jpg       | scheme-monochrome
+galaxy         | ~/Pictures/Wallpapers/catppuccin/galaxy-waves.jpg     | scheme-tonal-spot

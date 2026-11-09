@@ -58,3 +58,9 @@ output_path = '~/.config/starship.toml'
 [templates.vscode]
 input_path = '~/.config/matugen/templates/vscode/matugen-dark.json'
 output_path = '~/.vscode/extensions/rice.rice-matugen-1.0.0/themes/matugen-dark.json'
+
+# Telegram: matugen пишет роли, rice-telegram-theme собирает из них .tdesktop-theme
+[templates.telegram]
+input_path = '~/.config/matugen/templates/telegram/palette.json'
+output_path = '~/.local/state/rice/telegram-palette.json'
+post_hook = 'rice-telegram-theme'
