@@ -15,6 +15,8 @@ local menu        = "wofi --show drun"
 ------------------------------------------------------------------------
 hl.unbind("SUPER + Q")   -- было: закрыть окно        -> терминал
 hl.unbind("SUPER + B")   -- было: левый сайдбар      -> браузер
+hl.unbind("SUPER + SUPER_L")  -- было: одиночный Super открывал поиск/обзор ii
+hl.unbind("SUPER + SUPER_R")
 hl.unbind("SUPER + V")   -- было: клипборд шелла     -> история буфера (cliphist)
 hl.unbind("SUPER + A")   -- было: левый сайдбар      -> скриншот области
 hl.unbind("SUPER + C")   -- было: редактор кода      -> закрыть окно
@@ -85,6 +87,3 @@ hl.bind("ALT + Tab", function()
         hl.dispatch(hl.dsp.window.bring_to_top())
     end
 end, { description = "Window: previous (Alt+Tab)" })
-
--- Смена темы (обои + схема палитры) из меню
-hl.bind("SUPER + ALT + T", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-theme"), { description = "Rice: switch theme" })
