@@ -31,7 +31,7 @@
     },
     "palette": {
       "accentColor": "",
-      "type": "scheme-content"
+      "type": "scheme-monochrome"
     },
     "transparency": {
       "automatic": true,
@@ -319,7 +319,7 @@
     "timeout": 1000
   },
   "osk": {
-    "layout": "Russian",
+    "layout": "English",
     "pinnedOnStartup": false
   },
   "overlay": {

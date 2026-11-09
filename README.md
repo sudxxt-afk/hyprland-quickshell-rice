@@ -26,8 +26,10 @@
 
 ## Тема
 
-- Палитра: ii, схема `scheme-content` (`ii/config.json` → `appearance.palette.type`).
-  `auto` на малонасыщенных обоях уходит в `scheme-neutral`, и всё становится серым.
+- Палитра: ii, схема `scheme-monochrome` — серо-белая, без оттенка от обоев
+  (`ii/config.json` → `appearance.palette.type`). Цветные варианты:
+  `scheme-content` (оттенок обоев), `scheme-fidelity` (контрастнее).
+- Рамка окна: градиент `primary` → `outline` (в монохроме белый → серый).
 - Перегенерировать без смены обоев:
   `~/.config/quickshell/ii/scripts/colors/switchwall.sh --noswitch`.
 - Курсор `Bibata-Modern-Classic` 24 — в env Hyprland, GTK `settings.ini`,
