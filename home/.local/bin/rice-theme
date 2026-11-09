@@ -43,4 +43,4 @@ bash "$SWITCHWALL" --image "$wall" --type "$scheme" >/dev/null 2>&1 || true
 hyprctl reload >/dev/null
 pkill -USR1 -x kitty || true
 
-notify-send -a rice-theme "Тема: $name" "VS Code подхватит после Reload Window, Telegram — после повторного выбора темы" 2>/dev/null || true
+notify-send -a rice-theme "Тема: $name" "VS Code: Reload Window. Telegram: Настройки чатов → ⋮ → Выбрать из файла → ~/.local/share/rice/rice.tdesktop-theme" 2>/dev/null || true

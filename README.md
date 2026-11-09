@@ -107,5 +107,7 @@ matugen пишет роли палитры в `~/.local/state/rice/telegram-pale
 post_hook `rice-telegram-theme` собирает `~/.local/share/rice/rice.tdesktop-theme`.
 Ключи Telegram — из walogram (MIT, `third_party/walogram.LICENSE`).
 
-Telegram сам файл не отслеживает: после смены темы открыть его заново —
-`/opt/Telegram/Telegram -- ~/.local/share/rice/rice.tdesktop-theme` → «Применить».
+Применить (и заново после каждой смены палитры — Telegram хранит копию, а не
+ссылку на файл): Настройки → Настройки чатов → ⋮ → «Выбрать из файла» →
+`~/.local/share/rice/rice.tdesktop-theme` → «Применить».
+Через командную строку Telegram 7 файл темы не открывает — ни запущенный, ни при старте.
