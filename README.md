@@ -20,7 +20,18 @@
 
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
 `fuzzel/fuzzel_theme.ini`, `hypr/hyprland/colors.lua`, `hypr/hyprlock/colors.conf`,
-`gtk-*/gtk.css`. Они пересоздаются из шаблонов при смене обоев.
+`gtk-*/gtk.css`, `btop/themes/matugen.theme`, `fastfetch/config.jsonc`,
+`starship.toml`. Они пересоздаются из шаблонов при смене обоев — править надо
+шаблон в `matugen/templates/`, а не результат.
+
+## Тема
+
+- Палитра: ii, схема `scheme-content` (`ii/config.json` → `appearance.palette.type`).
+  `auto` на малонасыщенных обоях уходит в `scheme-neutral`, и всё становится серым.
+- Перегенерировать без смены обоев:
+  `~/.config/quickshell/ii/scripts/colors/switchwall.sh --noswitch`.
+- Курсор `Bibata-Modern-Classic` 24 — в env Hyprland, GTK `settings.ini`,
+  gsettings и `~/.icons/default`. Иконки `Papirus` (GTK, gsettings, kdeglobals).
 
 Отдельные репозитории (не здесь): `~/.config/quickshell/chaldea`,
 `~/.config/quickshell/music-player`.
