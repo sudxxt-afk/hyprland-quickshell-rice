@@ -76,6 +76,34 @@ hl.config({
     },
 })
 
+-- Группы (Super+H): вкладки над тайлом в цветах палитры
+hl.config({
+    group = {
+        col = {
+            border_active   = { colors = { "rgba(" .. primary .. "ee)", "rgba(" .. accent2 .. "ee)" }, angle = 45 },
+            border_inactive = "rgba(00000000)",
+        },
+        groupbar = {
+            enabled            = true,
+            height             = 20,
+            font_size          = 11,
+            gradients          = true,
+            rounding           = 8,
+            gradient_rounding  = 8,
+            indicator_height   = 0,
+            gaps_in            = 4,
+            gaps_out           = 4,
+            keep_upper_gap     = false,
+            col = {
+                active   = "rgba(" .. primary .. "ee)",
+                inactive = "rgba(" .. matugen_color("surface_container_high", "2a2a2a") .. "cc)",
+            },
+            text_color          = "rgba(" .. matugen_color("on_primary", "1b1b1b") .. "ff)",
+            text_color_inactive = "rgba(" .. matugen_color("on_surface_variant", "c6c6c6") .. "ff)",
+        },
+    },
+})
+
 -- Лёгкий «пружинящий» вылет окон на кривых, которые end-4 объявил, но не использует
 hl.animation({ leaf = "windowsIn",   enabled = true, speed = 4,   bezier = "expressiveDefaultSpatial", style = "popin 85%" })
 hl.animation({ leaf = "windowsMove", enabled = true, speed = 3.5, bezier = "expressiveDefaultSpatial", style = "slide" })

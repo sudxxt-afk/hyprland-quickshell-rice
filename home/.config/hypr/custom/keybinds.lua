@@ -55,3 +55,27 @@ hl.bind(mainMod .. " + V",
 hl.bind(mainMod .. " + A",     hl.dsp.exec_cmd("hyprshot -m region -z --clipboard-only"), { description = "Скриншот области -> буфер" })
 hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd("hyprshot -m window -z --clipboard-only"), { description = "Скриншот окна -> буфер" })
 hl.bind("Print",               hl.dsp.exec_cmd("hyprshot -m output -z -o ~/Pictures/Screenshots"), { description = "Скриншот экрана -> файл" })
+
+------------------------------------------------------------------------
+--  RICE: scratchpad-окна и группы
+------------------------------------------------------------------------
+-- Нажатие: если приложение ещё не запущено — запускаем (правило в rules.lua
+-- само уводит окно на special-воркспейс), затем показываем/прячем этот воркспейс.
+local function scratchpad(name, cmd)
+    return function()
+        local ws = hl.get_workspace("special:" .. name)
+        if ws == nil or ws.windows == 0 then
+            hl.exec_cmd(cmd)
+        end
+        hl.dispatch(hl.dsp.workspace.toggle_special(name))
+    end
+end
+
+hl.bind("SUPER + Z", scratchpad("term", "kitty --class scratchpad-term"), { description = "Scratchpad: terminal" })
+hl.bind("SUPER + Y", scratchpad("tg",   "/opt/Telegram/Telegram"),       { description = "Scratchpad: Telegram" })
+hl.bind("SUPER + U", scratchpad("top",  "kitty --class scratchpad-btop -e btop"), { description = "Scratchpad: btop" })
+
+-- Группы: окна складываются во вкладки в одном тайле
+hl.bind("SUPER + H",         hl.dsp.group.toggle(),       { description = "Group: toggle" })
+hl.bind("SUPER + SHIFT + J", hl.dsp.group.next(),         { description = "Group: next tab" })
+hl.bind("SUPER + SHIFT + K", hl.dsp.group.prev(),         { description = "Group: previous tab" })
