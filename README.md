@@ -21,7 +21,7 @@
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
 `fuzzel/fuzzel_theme.ini`, `hypr/hyprland/colors.lua`, `hypr/hyprlock/colors.conf`,
 `gtk-*/gtk.css`, `btop/themes/matugen.theme`, `fastfetch/config.jsonc`,
-`starship.toml`. Они пересоздаются из шаблонов при смене обоев — править надо
+`starship.toml`, тема VS Code. Они пересоздаются из шаблонов при смене обоев — править надо
 шаблон в `matugen/templates/`, а не результат.
 
 ## Тема
@@ -41,6 +41,9 @@
 | --- | --- |
 | `Super + `` ` `` | обзор рабочих столов (hyprexpo) |
 | `Super + Z` | выпадающий терминал (scratchpad) |
+| `Alt + Tab` | к предыдущему окну (через столы), повторно — обратно |
+| `Alt + Shift + Tab` | перебрать окна текущего стола |
+| щипок 4 пальцами | обзор рабочих столов (hyprexpo) |
 
 - end-4 выключает блюр у всех окон; в `custom/rules.lua` он возвращён только
   полупрозрачным: терминалы всегда, редакторы и Nautilus — когда не в фокусе.
@@ -82,3 +85,12 @@ end-4 не трогает `hypr/custom/`, но может перезаписат
   **после** перезагрузки в Fedora 45, не раньше. F3 в tuigreet — выбор сессии.
 - Не входит после перезагрузки: `Ctrl+Alt+F3` → логин в консоли →
   `sudo greetd-setup --rollback && sudo reboot`.
+
+## VS Code
+
+Тема «Rice Matugen» — серо-белый интерфейс из палитры, синтаксис в тех же
+фиксированных цветах, что терминал. Шаблон: `matugen/templates/vscode/`, основан
+на dux-shell (MIT, см. `third_party/dux-shell.LICENSE`).
+
+- Поставить/переставить расширение: `./rice vscode`.
+- После смены обоев новые цвета видны после `Developer: Reload Window`.

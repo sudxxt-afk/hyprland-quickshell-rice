@@ -53,3 +53,8 @@ output_path = '~/.config/fastfetch/config.jsonc'
 [templates.starship]
 input_path = '~/.config/matugen/templates/starship/starship.toml'
 output_path = '~/.config/starship.toml'
+
+# Тема VS Code: расширение ставится через `./rice vscode`, matugen перезаписывает его файл темы
+[templates.vscode]
+input_path = '~/.config/matugen/templates/vscode/matugen-dark.json'
+output_path = '~/.vscode/extensions/rice.rice-matugen-1.0.0/themes/matugen-dark.json'

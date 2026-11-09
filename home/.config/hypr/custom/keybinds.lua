@@ -73,3 +73,20 @@ end
 
 hl.bind("SUPER + Z", scratchpad("term", "kitty --class scratchpad-term"), { description = "Scratchpad: terminal" })
 
+
+------------------------------------------------------------------------
+--  RICE: Alt+Tab (идея из HyDE altab, но нативно)
+------------------------------------------------------------------------
+-- Alt+Tab — к предыдущему окну, где бы оно ни было; повторное нажатие возвращает.
+hl.bind("ALT + Tab", function()
+    local w = hl.get_last_window()
+    if w then
+        hl.dispatch(hl.dsp.focus({ window = "address:" .. w.address }))
+        hl.dispatch(hl.dsp.window.bring_to_top())
+    end
+end, { description = "Window: previous (Alt+Tab)" })
+-- Alt+Shift+Tab — перебрать окна текущего стола
+hl.bind("ALT + SHIFT + Tab", function()
+    hl.dispatch(hl.dsp.window.cycle_next())
+    hl.dispatch(hl.dsp.window.bring_to_top())
+end, { description = "Window: cycle on workspace" })

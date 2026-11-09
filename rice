@@ -6,6 +6,7 @@
 #   ./rice snapshot   # скопировать в репо то, что нельзя симлинкать (ii/config.json)
 #   ./rice restore    # обратное: ii/config.json → ~/.config/illogical-impulse
 #   ./rice status     # что не связано / разошлось
+#   ./rice vscode     # собрать и поставить тему VS Code (цвета пишет matugen)
 #
 set -euo pipefail
 
@@ -62,10 +63,57 @@ cmd_status() {
     (( bad )) || log "Всё связано и совпадает"
 }
 
+# VS Code ведёт реестр расширений, поэтому тему ставим штатно из VSIX.
+# Файл темы внутри установленного расширения дальше перезаписывает matugen.
+VSCODE_EXT="$HOME/.vscode/extensions/rice.rice-matugen-1.0.0"
+cmd_vscode() {
+    local theme="$HOME/.local/state/rice/vscode-matugen-dark.json"
+    if [[ -f "$VSCODE_EXT/themes/matugen-dark.json" ]]; then
+        cp "$VSCODE_EXT/themes/matugen-dark.json" "$theme.tmp"
+    else
+        printf '{ "name": "Rice Matugen", "type": "dark", "colors": {} }\n' > "$theme.tmp"
+    fi
+    local vsix
+    vsix="$(mktemp --suffix=.vsix)"
+    python3 - "$REPO/vscode-theme/package.json" "$theme.tmp" "$vsix" <<'PY'
+import sys, zipfile
+pkg, theme, out = sys.argv[1:]
+manifest = """<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
+  <Metadata>
+    <Identity Language="en-US" Id="rice-matugen" Version="1.0.0" Publisher="rice"/>
+    <DisplayName>Rice Matugen</DisplayName>
+    <Description xml:space="preserve">Palette from the wallpaper via matugen</Description>
+    <Categories>Themes</Categories>
+    <Properties><Property Id="Microsoft.VisualStudio.Code.Engine" Value="^1.70.0"/></Properties>
+  </Metadata>
+  <Installation><InstallationTarget Id="Microsoft.VisualStudio.Code"/></Installation>
+  <Dependencies/>
+  <Assets><Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true"/></Assets>
+</PackageManifest>
+"""
+types = """<?xml version="1.0" encoding="utf-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension=".json" ContentType="application/json"/>
+  <Default Extension=".vsixmanifest" ContentType="text/xml"/>
+</Types>
+"""
+with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+    z.writestr("extension.vsixmanifest", manifest)
+    z.writestr("[Content_Types].xml", types)
+    z.write(pkg, "extension/package.json")
+    z.write(theme, "extension/themes/matugen-dark.json")
+PY
+    code --install-extension "$vsix" --force
+    rm -f "$vsix" "$theme.tmp"
+    log "Тема стоит. Перекрасить: switchwall.sh --noswitch; выбрать: Ctrl+K Ctrl+T → Rice Matugen"
+}
+
 case "${1:-}" in
     link)     cmd_link ;;
     snapshot) cmd_snapshot ;;
     restore)  cmd_restore ;;
     status)   cmd_status ;;
-    *) sed -n '3,9p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+    vscode)   cmd_vscode ;;
+    *) sed -n '3,10p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

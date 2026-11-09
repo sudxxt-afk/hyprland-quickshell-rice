@@ -115,4 +115,6 @@ if hl.plugin.hyprexpo then
         label_bg_shape      = "circle",
     } } })
     hl.bind("SUPER + grave", function() hl.plugin.hyprexpo.expo("toggle") end, { description = "Hyprexpo: toggle overview" })
+    -- щипок 4 пальцами (3 пальца-щипок у end-4 уже fullscreen, свайпы 3/4 заняты)
+    hl.plugin.hyprexpo.gesture({ fingers = 4, direction = "pinch", action = "expo" })
 end
