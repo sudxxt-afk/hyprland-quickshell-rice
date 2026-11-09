@@ -15,7 +15,7 @@
 | `home/.config/matugen/` | `~/.config/matugen/` | шаблоны палитры из обоев |
 | `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и уведомления |
 | `home/.config/quickshell/{cava,chaldea-glyph}` | `~/.config/quickshell/` | десктоп-виджеты |
-| `home/.local/bin/` | `~/.local/bin/` | `fedora-slim`, `hyprexpo-rebuild` |
+| `home/.local/bin/` | `~/.local/bin/` | `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
 | `ii/config.json` | `~/.config/illogical-impulse/config.json` | настройки ii (копией, не симлинком) |
 
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
@@ -72,3 +72,13 @@
 end-4 не трогает `hypr/custom/`, но может перезаписать `hypridle.conf` и
 `hyprlock.conf`. После обновления — `./rice status` и `git diff`: если файл стал
 обычным, `./rice link` вернёт симлинк, а diff покажет, что принёс апстрим.
+
+## Вход и блокировка
+
+- Блокировка — локскрин ii (`quickshell:lock`), в цветах палитры. hyprlock —
+  запасной, если quickshell упал; его цвета тоже из matugen.
+- Экран входа: `greetd-setup` меняет gdm на greetd + tuigreet (монохромная тема,
+  Terminus 22 в консоли, gnome-keyring разблокируется при входе). Запускать
+  **после** перезагрузки в Fedora 45, не раньше. F3 в tuigreet — выбор сессии.
+- Не входит после перезагрузки: `Ctrl+Alt+F3` → логин в консоли →
+  `sudo greetd-setup --rollback && sudo reboot`.

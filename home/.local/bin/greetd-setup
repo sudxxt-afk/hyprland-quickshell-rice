@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+#
+# greetd-setup — вход через greetd + tuigreet вместо gdm.
+#
+# gdm держит в памяти greeter на GNOME Shell; tuigreet — текстовый экран входа
+# на голом VT: почти ноль RAM/GPU, монохромный, как остальной рис.
+#
+# Запускать ПОСЛЕ перезагрузки в Fedora 45: установка пакетов до неё
+# ломает скачанную транзакцию system-upgrade.
+#
+#   greetd-setup             # поставить и включить (dnf спросит y/N)
+#   greetd-setup --dry-run   # показать, что будет сделано
+#   greetd-setup --rollback  # вернуть gdm
+#
+# Если после перезагрузки не получается войти: Ctrl+Alt+F3 → логин в консоли →
+#   sudo greetd-setup --rollback && sudo reboot
+#
+set -euo pipefail
+
+MODE="${1:-install}"
+DRY=0; [[ "$MODE" == "--dry-run" ]] && DRY=1
+
+if [[ $EUID -ne 0 ]]; then
+    exec sudo "$0" "$@"
+fi
+
+log() { printf '\033[1;35m::\033[0m %s\n' "$*"; }
+die() { printf '\033[1;31m!!\033[0m %s\n' "$*" >&2; exit 1; }
+run() { if (( DRY )); then echo "   [dry-run] $*"; else "$@"; fi; }
+backup() { [[ -e "$1" ]] && run cp -a "$1" "$1.bak-$(date +%Y%m%d-%H%M%S)"; return 0; }
+
+if [[ "$MODE" == "--rollback" ]]; then
+    log "Возвращаю gdm"
+    systemctl disable greetd.service 2>/dev/null || true
+    systemctl enable --force gdm.service
+    log "Готово, перезагрузись"
+    exit 0
+fi
+
+if pgrep -x dnf >/dev/null || pgrep -x dnf5 >/dev/null; then die "Сейчас работает dnf — дождись окончания"; fi
+[[ -e /system-update ]] && die "Запланирован offline-апгрейд — сначала перезагрузись в него"
+REL="$(rpm -E %fedora)"
+(( REL >= 45 )) || die "Система ещё Fedora $REL. Сначала закончи апгрейд до 45 и перезагрузись"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. Пакеты
+# ─────────────────────────────────────────────────────────────────────────────
+log "Ставлю greetd, tuigreet и крупный консольный шрифт"
+if (( DRY )); then
+    dnf install --assumeno greetd tuigreet terminus-fonts-console || true
+else
+    dnf install greetd tuigreet terminus-fonts-console
+fi
+
+# Пользователь, от которого работает greeter (Fedora создаёт его в пакете greetd)
+GREETER_USER="greetd"
+if ! getent passwd "$GREETER_USER" >/dev/null; then
+    shipped="$(sed -n 's/^user *= *"\(.*\)"/\1/p' /etc/greetd/config.toml 2>/dev/null | head -n1)"
+    [[ -n "$shipped" ]] && GREETER_USER="$shipped"
+fi
+(( DRY )) || getent passwd "$GREETER_USER" >/dev/null || die "Нет пользователя greeter'а ($GREETER_USER)"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. Конфиг greetd
+# ─────────────────────────────────────────────────────────────────────────────
+# По умолчанию — Hyprland (как сейчас в gdm, без uwsm). F3 в tuigreet — выбрать
+# другую сессию; выбор и логин запоминаются.
+# Тема монохромная, только ANSI-имена — их точно понимает любой tuigreet 0.9.x.
+log "Пишу /etc/greetd/config.toml"
+backup /etc/greetd/config.toml
+if (( ! DRY )); then
+    cat > /etc/greetd/config.toml <<EOF
+[terminal]
+vt = 1
+
+[default_session]
+command = "tuigreet --time --time-format '%H:%M  ·  %a %d %b' --remember --remember-session --asterisks --user-menu --sessions /usr/share/wayland-sessions --cmd start-hyprland --window-padding 2 --container-padding 2 --greeting 'welcome back' --theme 'border=gray;title=white;greet=gray;text=white;prompt=white;time=gray;action=darkgray;button=white;container=black;input=white'"
+user = "$GREETER_USER"
+EOF
+fi
+
+# --remember хранит последний логин/сессию тут
+run mkdir -p /var/cache/tuigreet
+run chown "$GREETER_USER:$GREETER_USER" /var/cache/tuigreet
+run chmod 0755 /var/cache/tuigreet
+command -v restorecon >/dev/null && run restorecon -R /var/cache/tuigreet /etc/greetd
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. PAM: разблокировка gnome-keyring при входе (раньше это делал gdm)
+# ─────────────────────────────────────────────────────────────────────────────
+PAM=/etc/pam.d/greetd
+if [[ -f "$PAM" ]] && ! grep -q pam_gnome_keyring "$PAM"; then
+    log "Добавляю gnome-keyring в $PAM"
+    backup "$PAM"
+    if (( ! DRY )); then
+        # auth — после остальных auth-строк, session — в конец
+        awk '
+            { lines[NR] = $0; if ($1 == "auth" || $1 == "-auth") last_auth = NR }
+            END {
+                for (i = 1; i <= NR; i++) {
+                    print lines[i]
+                    if (i == last_auth) print "-auth       optional     pam_gnome_keyring.so"
+                }
+                print "-session    optional     pam_gnome_keyring.so auto_start"
+            }' "$PAM" > "$PAM.new" && mv "$PAM.new" "$PAM"
+        command -v restorecon >/dev/null && restorecon "$PAM"
+    fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. Консольный шрифт: стандартный на 1080p мелкий, tuigreet с ним выглядит убого
+# ─────────────────────────────────────────────────────────────────────────────
+log "Шрифт консоли: Terminus 22 bold"
+backup /etc/vconsole.conf
+if (( ! DRY )); then
+    if grep -q '^FONT=' /etc/vconsole.conf 2>/dev/null; then
+        sed -i 's/^FONT=.*/FONT=ter-v22b/' /etc/vconsole.conf
+    else
+        echo 'FONT=ter-v22b' >> /etc/vconsole.conf
+    fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. Переключение display manager (вступит в силу после перезагрузки)
+# ─────────────────────────────────────────────────────────────────────────────
+log "gdm → greetd"
+run systemctl disable gdm.service
+run systemctl enable --force greetd.service
+
+log "Готово. Перезагрузись. Если что-то не так: Ctrl+Alt+F3 → sudo greetd-setup --rollback"
