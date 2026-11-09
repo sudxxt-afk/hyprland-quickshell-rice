@@ -94,13 +94,11 @@ hl.window_rule({
 })
 
 ------------------------
--- RICE: scratchpad-окна (бинды в custom/keybinds.lua)
--- Каждое живёт на своём special-воркспейсе, плавает по центру и прячется по тому же хоткею.
+-- RICE: выпадающий терминал (бинд в custom/keybinds.lua)
+-- Живёт на своём special-воркспейсе, плавает по центру и прячется по тому же хоткею.
 ------------------------
 local scratchpads = {
     { ws = "term", class = "^(scratchpad-term)$",         size = { "(monitor_w*0.70)", "(monitor_h*0.60)" } },
-    { ws = "tg",   class = "^(org\\.telegram\\.desktop.*|TelegramDesktop)$", size = { "(monitor_w*0.55)", "(monitor_h*0.80)" } },
-    { ws = "top",  class = "^(scratchpad-btop)$",         size = { "(monitor_w*0.75)", "(monitor_h*0.75)" } },
 }
 for _, s in ipairs(scratchpads) do
     hl.window_rule({
