@@ -115,14 +115,3 @@ if hl.plugin.hyprexpo then
     } } })
     hl.bind("SUPER + grave", function() hl.plugin.hyprexpo.expo("toggle") end, { description = "Hyprexpo: toggle overview" })
 end
-
-------------------------
--- Экранный шейдер: зерно + виньетка. Super+Shift+\ — вкл/выкл.
--- По умолчанию выключен: даже статичный шейдер добавляет проход на каждый кадр.
-------------------------
-local grain_shader = HOME .. "/.config/hypr/shaders/grain.glsl"
-local grain_on = false
-hl.bind("SUPER + SHIFT + backslash", function()
-    grain_on = not grain_on
-    hl.config({ decoration = { screen_shader = grain_on and grain_shader or "" } })
-end, { description = "Rice: toggle grain/vignette shader" })
