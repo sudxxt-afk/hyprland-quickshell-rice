@@ -1,2 +1,3 @@
 *.bak-*
 .DS_Store
+home/.config/hypr/custom/scripts/__restore_video_wallpaper.sh
