@@ -35,6 +35,17 @@
 - Курсор `Bibata-Modern-Classic` 24 — в env Hyprland, GTK `settings.ini`,
   gsettings и `~/.icons/default`. Иконки `Papirus` (GTK, gsettings, kdeglobals).
 
+## Визуал и хоткеи
+
+| хоткей | что |
+| --- | --- |
+| `Super + `` ` `` | обзор рабочих столов (hyprexpo) |
+| `Super + Shift + \` | экранный шейдер: зерно + виньетка (`hypr/shaders/grain.glsl`) |
+
+- end-4 выключает блюр у всех окон; в `custom/rules.lua` он возвращён только
+  полупрозрачным: терминалы всегда, редакторы и Nautilus — когда не в фокусе.
+- Одно окно на столе — без отступов, рамки и скругления; два и больше — как обычно.
+
 Отдельные репозитории (не здесь): `~/.config/quickshell/chaldea`,
 `~/.config/quickshell/music-player`.
 

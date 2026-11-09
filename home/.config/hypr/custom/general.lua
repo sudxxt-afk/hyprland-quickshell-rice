@@ -90,11 +90,39 @@ if is_file_exists(hyprexpo_so) then
     pcall(hl.plugin.load, hyprexpo_so)
 end
 if hl.plugin.hyprexpo then
+    local c = function(role, fb) return "rgb(" .. matugen_color(role, fb) .. ")" end
     hl.config({ plugin = { hyprexpo = {
         columns          = 3,
-        gaps_in          = 8,
-        bg_col           = "rgb(" .. matugen_color("background", "161312") .. ")",
+        gaps_in          = 10,
+        gaps_out         = 24,
+        bg_col           = c("surface", "131313"),
         workspace_method = "center current",
+        -- рамки плиток в цветах палитры: текущий стол, фокус клавиатуры, под мышью
+        border_width         = 2,
+        border_color_current = c("primary", "ffffff"),
+        border_color_focus   = c("outline", "919191"),
+        border_color_hover   = c("outline_variant", "474747"),
+        -- номера столов в углу плитки
+        label_enable        = 1,
+        label_text_mode     = "index",
+        label_position      = "top-left",
+        label_font_size     = 14,
+        label_color_current = c("on_primary", "1b1b1b"),
+        label_color_focus   = c("on_surface", "e2e2e2"),
+        label_color_hover   = c("on_surface", "e2e2e2"),
+        label_bg_enable     = 1,
+        label_bg_shape      = "circle",
     } } })
     hl.bind("SUPER + grave", function() hl.plugin.hyprexpo.expo("toggle") end, { description = "Hyprexpo: toggle overview" })
 end
+
+------------------------
+-- Экранный шейдер: зерно + виньетка. Super+Shift+\ — вкл/выкл.
+-- По умолчанию выключен: даже статичный шейдер добавляет проход на каждый кадр.
+------------------------
+local grain_shader = HOME .. "/.config/hypr/shaders/grain.glsl"
+local grain_on = false
+hl.bind("SUPER + SHIFT + backslash", function()
+    grain_on = not grain_on
+    hl.config({ decoration = { screen_shader = grain_on and grain_shader or "" } })
+end, { description = "Rice: toggle grain/vignette shader" })

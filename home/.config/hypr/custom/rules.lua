@@ -57,3 +57,38 @@ hl.window_rule({
     match        = { class = "^(vlc|mpv)$" },
     idle_inhibit = "fullscreen",
 })
+
+------------------------
+-- RICE: стекло и умные отступы
+------------------------
+-- end-4 выключает блюр у всех окон (rules.lua: class ".*" → no_blur).
+-- Возвращаем его только тем, кто реально полупрозрачен, — на UHD 620 блюр не бесплатный.
+hl.window_rule({
+    name    = "glass-terminal",
+    match   = { class = "^(kitty|foot|com\\.mitchellh\\.ghostty)$" },
+    no_blur = false,
+})
+-- Редакторы и файловый менеджер: чуть прозрачные, когда не в фокусе
+hl.window_rule({
+    name    = "glass-inactive",
+    match   = { class = "^(Code|code|Antigravity|obsidian|org\\.gnome\\.Nautilus)$" },
+    opacity = "1.0 0.92",
+    no_blur = false,
+})
+
+-- Одно окно на рабочем столе (или fullscreen-раскладка) — без отступов, рамки и скругления:
+-- на 1080p ноутбуке место дороже красоты. Как только окон два — всё возвращается.
+hl.workspace_rule({ workspace = "w[tv1]", gaps_out = 0, gaps_in = 0 })
+hl.workspace_rule({ workspace = "f[1]",   gaps_out = 0, gaps_in = 0 })
+hl.window_rule({
+    name        = "smart-gaps-single",
+    match       = { float = false, workspace = "w[tv1]" },
+    border_size = 0,
+    rounding    = 0,
+})
+hl.window_rule({
+    name        = "smart-gaps-fullscreen",
+    match       = { float = false, workspace = "f[1]" },
+    border_size = 0,
+    rounding    = 0,
+})
