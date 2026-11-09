@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   style.css — тема wofi, рендерится matugen из обоев.
+   Правки здесь затираются при следующей смене обоев.
+   Прозрачность — через GTK-функцию alpha(цвет, коэффициент).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+window {
+    background-color: alpha({{colors.surface_container.default.rgb}}, 0.88);
+    border: 2px solid alpha({{colors.primary.default.rgb}}, 0.55);
+    border-radius: 16px;
+    font-family: "CozetteVector", "JetBrainsMono Nerd Font";
+    font-size: 14px;
+}
+
+#input {
+    margin: 10px 12px 6px 12px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 10px;
+    background-color: alpha({{colors.surface_container_high.default.rgb}}, 0.75);
+    color: {{colors.on_surface.default.hex}};
+    caret-color: {{colors.primary.default.hex}};
+}
+#input:focus {
+    border: none;
+}
+
+#outer-box {
+    padding-bottom: 10px;
+}
+
+#scroll {
+    margin: 0 12px;
+}
+
+#entry {
+    padding: 7px 10px;
+    border-radius: 10px;
+}
+#entry:selected {
+    background-color: alpha({{colors.primary.default.rgb}}, 0.22);
+}
+#entry:selected #text {
+    color: {{colors.primary.default.hex}};
+}
+
+#text {
+    color: {{colors.on_surface.default.hex}};
+}
+
+#img {
+    margin-right: 8px;
+}

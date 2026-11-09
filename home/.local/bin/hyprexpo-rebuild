@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+#
+# hyprexpo-rebuild — пересборка плагина Hyprexpo под ТЕКУЩУЮ версию Hyprland.
+#
+# Плагин должен быть скомпилирован строго против той же ревизии Hyprland и того
+# же ABI зависимостей, что и запущенный композитор. Поэтому после
+#   dnf upgrade hyprland
+# нужно запустить этот скрипт заново.
+#
+# Root не нужен: заголовки Hyprland и его зависимостей выкачиваются из RPM и
+# распаковываются в приватный sysroot, сборка идёт из домашнего каталога, а
+# готовый .so подхватывается из конфига через hl.plugin.load().
+#
+# Использование:
+#   hyprexpo-rebuild          # пересобрать и подменить установленный плагин
+#   hyprexpo-rebuild --clean  # удалить кэш (sysroot, исходники, объектники)
+#
+set -euo pipefail
+
+REPO_SLUG=sandwichfarm/hyprexpo
+TOML_URL="https://raw.githubusercontent.com/$REPO_SLUG/master/hyprpm.toml"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/hyprexpo"
+SYSROOT="$CACHE/sysroot"
+PREFIX="$HOME/.local/lib/hyprland-plugins"
+TARGET="$PREFIX/hyprexpo.so"
+CXX="${CXX:-g++}"
+JOBS="$(nproc)"
+
+# Заголовки, которые нужны только на время сборки (Runtime-библиотеки в системе
+# уже стоят — их притащил сам Hyprland).
+DEV_PKGS=(
+    hyprland-devel pixman-devel libdrm-devel pango-devel libinput-devel
+    systemd-devel wayland-devel libxkbcommon-devel lua-devel glib2-devel
+    hyprutils-devel hyprlang-devel hyprgraphics-devel hyprcursor-devel
+    aquamarine-devel hyprwire-devel harfbuzz-devel cairo-devel freetype-devel
+)
+
+log()  { printf '\033[1;35m::\033[0m %s\n' "$*"; }
+die()  { printf '\033[1;31m!!\033[0m %s\n' "$*" >&2; exit 1; }
+
+if [[ "${1:-}" == "--clean" ]]; then
+    log "Удаляю кэш сборки: $CACHE"
+    rm -rf "$CACHE"
+    log "Готово. Следующий запуск скачает всё заново."
+    exit 0
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. Версия Hyprland и подходящий пин исходников плагина
+# ─────────────────────────────────────────────────────────────────────────────
+command -v hyprctl >/dev/null || die "hyprctl не найден: не вижу установленный Hyprland"
+HLVER="$(hyprctl version | sed -n 's/^Hyprland \([0-9][0-9.]*\).*/\1/p' | head -n1)"
+[[ -n "$HLVER" ]] || die "Не смог определить версию Hyprland из 'hyprctl version'"
+log "Hyprland $HLVER"
+
+log "Ищу пин исходников плагина в hyprpm.toml"
+PIN="$(curl -fsSL "$TOML_URL" | grep -E "#[[:space:]]*${HLVER//./\\.}\$" | tail -n1 \
+       | sed -E 's/.*[",][[:space:]]*"([0-9a-f]{40})"\].*/\1/')"
+[[ "${#PIN}" -eq 40 ]] || die "Для Hyprland $HLVER в $REPO_SLUG нет пина.
+   Плагин пока не поддерживает эту версию — смотри ветку hyprland-git в репозитории."
+log "Коммит плагина: $PIN"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. Sysroot с заголовками (один раз, без root)
+# ─────────────────────────────────────────────────────────────────────────────
+if [[ ! -f "$SYSROOT/usr/share/pkgconfig/hyprland.pc" ]]; then
+    log "Готовлю sysroot с заголовками из RPM (может занять пару минут, ~300 МБ)"
+    RPMDIR="$CACHE/rpms"
+    rm -rf "$RPMDIR"; mkdir -p "$RPMDIR" "$SYSROOT"
+
+    dnf download --skip-unavailable --arch x86_64 --resolve \
+        --destdir "$RPMDIR" "${DEV_PKGS[@]}" >/dev/null \
+        || die "Не удалось скачать dev-пакеты через dnf download"
+
+    for rpm in "$RPMDIR"/*.rpm; do
+        rpm2cpio "$rpm" | cpio -idm --quiet -D "$SYSROOT" 2>/dev/null || true
+    done
+    rm -rf "$RPMDIR"
+
+    # .pc-файлы содержат абсолютные пути /usr — переориентируем их на sysroot
+    find "$SYSROOT" -name '*.pc' -print0 | xargs -0 sed -i "s|/usr|$SYSROOT/usr|g"
+    [[ -f "$SYSROOT/usr/share/pkgconfig/hyprland.pc" ]] || die "В sysroot нет hyprland.pc"
+fi
+grep -q "prefix=$SYSROOT" "$SYSROOT/usr/share/pkgconfig/hyprland.pc" \
+    || die "Пути в $SYSROOT устарели. Запусти: hyprexpo-rebuild --clean"
+
+PCVER="$(sed -n 's/^Version: //p' "$SYSROOT/usr/share/pkgconfig/hyprland.pc")"
+log "Заголовки Hyprland в sysroot: $PCVER"
+[[ "$PCVER" == "$HLVER" ]] || log "ВНИМАНИЕ: заголовки $PCVER != запущенный Hyprland $HLVER.
+   Запусти: hyprexpo-rebuild --clean"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. Исходники нужного коммита
+# ─────────────────────────────────────────────────────────────────────────────
+SRC="$CACHE/src-$PIN"
+if [[ ! -d "$SRC" ]]; then
+    log "Скачиваю исходники $PIN"
+    mkdir -p "$CACHE"
+    curl -fsSL -o "$CACHE/src-$PIN.tar.gz" \
+        "https://codeload.github.com/$REPO_SLUG/tar.gz/$PIN"
+    tar -xzf "$CACHE/src-$PIN.tar.gz" -C "$CACHE"
+    mv "$CACHE/hyprexpo-$PIN" "$SRC"
+    rm -f "$CACHE/src-$PIN.tar.gz"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. Сборка
+# ─────────────────────────────────────────────────────────────────────────────
+OBJDIR="$CACHE/obj-$PIN"
+OUT="$CACHE/hyprexpo.so"
+rm -rf "$OBJDIR"; mkdir -p "$OBJDIR"
+
+INC=(
+    -I"$SYSROOT/usr/include"
+    -I"$SYSROOT/usr/include/hyprland"
+    -I"$SYSROOT/usr/include/hyprland/src"
+    -I"$SYSROOT/usr/include/hyprland/protocols"
+    -I"$SYSROOT/usr/include/pango-1.0"
+    -I"$SYSROOT/usr/include/pixman-1"
+    -I"$SYSROOT/usr/include/libdrm"
+    -I"$SYSROOT/usr/include/glib-2.0"
+    -I"$SYSROOT/usr/lib64/glib-2.0/include"
+    -I"$SYSROOT/usr/include/harfbuzz"
+    -I"$SYSROOT/usr/include/cairo"
+    # системные заголовки как запасной вариант для того, чего нет в sysroot
+    -I/usr/include/harfbuzz
+    -I/usr/include/cairo
+    -I/usr/include/freetype2
+)
+CFLAGS=(
+    -fPIC -g -O2 -std=c++2b -Wno-c++11-narrowing -Wno-narrowing
+    --no-gnu-unique -DHYPREXPO_VERSION="\"$(cat "$SRC/VERSION")\""
+)
+
+# С какого-то коммита исходники форка лежат в src/, раньше — в корне
+SRCDIR="$SRC"; [[ -d "$SRC/src" ]] && SRCDIR="$SRC/src"
+INC+=(-I"$SRCDIR")
+mapfile -t SOURCES < <(cd "$SRCDIR" && ls -1 *.cpp)
+log "Компилирую ${#SOURCES[@]} файлов (${JOBS} потоков)"
+(cd "$SRCDIR" && printf '%s\n' "${SOURCES[@]}" | xargs -P "$JOBS" -I{} \
+    "$CXX" -c "${CFLAGS[@]}" "${INC[@]}" "{}" -o "$OBJDIR/{}.o") \
+    || die "Компиляция не удалась"
+
+# Линкуем против ровно тех библиотек, что уже использует запущенный Hyprland
+mapfile -t LIBS < <(objdump -p "$(command -v hyprland)" | awk '/NEEDED/{print $2}' \
+    | grep -E '^lib(pangocairo|libxkbcommon|xkbcommon|lua)')
+LIBS=("${LIBS[@]/#/-l:}")
+[[ ${#LIBS[@]} -gt 0 ]] || die "Не нашёл библиотеки pangocairo/xkbcommon/lua у бинарника hyprland"
+log "Линкую: ${LIBS[*]}"
+"$CXX" -shared -o "$OUT" "$OBJDIR"/*.o -L/lib64 -L/usr/lib64 "${LIBS[@]}" \
+    || die "Линковка не удалась"
+rm -rf "$OBJDIR"
+
+if ldd "$OUT" | grep -q "not found"; then
+    die "У собранного .so не хватает библиотек"
+fi
+log "Собрано: $OUT"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. Установка (нельзя перезаписывать .so, пока он загружен в Hyprland)
+# ─────────────────────────────────────────────────────────────────────────────
+SESSION=0
+if hyprctl version >/dev/null 2>&1; then
+    SESSION=1
+    hyprctl plugin unload "$TARGET" >/dev/null 2>&1 || true
+fi
+
+install -Dm755 "$OUT" "$TARGET"
+log "Установлено: $TARGET"
+
+if [[ $SESSION -eq 1 ]]; then
+    if hyprctl plugin load "$TARGET" >/dev/null 2>&1; then
+        log "Плагин загружен в текущую сессию"
+    else
+        log "Плагин обновлён; загрузится при следующем 'hyprctl reload' или входе"
+    fi
+    hyprctl plugin list | grep -A1 hyprexpo || true
+fi
+log "Готово. Если обзор не открывается — проверь 'hyprctl configerrors'."

@@ -1,0 +1,26 @@
+# mako — уведомления в стиле Catppuccin Mocha
+
+font=JetBrainsMono Nerd Font 10
+background-color=#1e1e2eE6
+text-color=#cdd6f4
+border-size=2
+border-color=#cba6f7
+border-radius=12
+padding=10
+margin=8
+width=360
+height=110
+anchor=top-right
+default-timeout=5000
+max-visible=3
+
+[urgency=critical]
+border-color=#f38ba8
+default-timeout=0
+
+[urgency=low]
+border-color=#6c7086
+
+# Скрывать всплывающие уведомления от Telegram Desktop
+[app-name="Telegram Desktop"]
+invisible=1

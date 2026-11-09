@@ -1,74 +1,48 @@
 # hyprland-quickshell-rice
 
-Кастомный рабочий стол для **Hyprland** на **Quickshell**: бар, плавающие
-стеклянные карточки и интерактивные выпадающие панели. Один процесс, единый
-стиль Catppuccin Mocha.
+Мой слой поверх [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland)
+(шелл illogical-impulse, «ii») на Fedora + Hyprland 0.57 (Lua-конфиг).
 
-> Заменяет `waybar`. Откат — `./uninstall.sh` (waybar возвращается одной строкой).
+Сам end-4 тут не хранится — только то, что я поменял или добавил.
+Старый самописный шелл на Quickshell — в ветке `legacy`.
 
-## Что внутри
+## Что где
 
-- **Бар** — воркспейсы, заголовок окна, раскладка, часы, трей, CPU/RAM,
-  громкость, яркость, сеть, Bluetooth, батарея, питание.
-- **Плавающие карточки** — часы (клик открывает календарь), системный монитор
-  со спарклайнами, плеер с обложкой (сам скрывается, когда ничего не играет).
-- **Док** — закреплённые приложения с индикатором «запущено».
-- **Выпадающие панели** — громкость с микшером потоков, Wi-Fi, Bluetooth,
-  календарь, батарея, питание.
+| в репо | в системе | что это |
+| --- | --- | --- |
+| `home/.config/hypr/custom/*.lua` | `~/.config/hypr/custom/` | мои настройки поверх end-4: ввод, рамки/тени/анимации, бинды, правила, hyprexpo |
+| `home/.config/hypr/*.conf`, `lock/`, `scripts/` | `~/.config/hypr/` | hyprlock, hypridle, hyprpaper, свои скрипты |
+| `home/.config/matugen/` | `~/.config/matugen/` | шаблоны палитры из обоев |
+| `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и уведомления |
+| `home/.config/quickshell/{cava,chaldea-glyph}` | `~/.config/quickshell/` | десктоп-виджеты |
+| `home/.local/bin/` | `~/.local/bin/` | `fedora-slim`, `hyprexpo-rebuild` |
+| `ii/config.json` | `~/.config/illogical-impulse/config.json` | настройки ii (копией, не симлинком) |
 
-## Требования
+В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
+`fuzzel/fuzzel_theme.ini`, `hypr/hyprland/colors.lua`, `hypr/hyprlock/colors.conf`,
+`gtk-*/gtk.css`. Они пересоздаются из шаблонов при смене обоев.
 
-- Fedora 44 (или совместимый), Hyprland 0.5x, Wayland
-- Пакет `quickshell` (COPR `nett00n/hyprland`, репозиторий уже подключён)
-- `brightnessctl`, `playerctl` — для яркости и плеера
+Отдельные репозитории (не здесь): `~/.config/quickshell/chaldea`,
+`~/.config/quickshell/music-player`.
 
-## Установка
+## Установка на чистую систему
 
-```sh
-./install.sh
-```
+1. Поставить end-4 по его инструкции (установлен 2026-10-19).
+2. `./rice link` — симлинки из `home/` в `$HOME`. Всё, что было на этих местах,
+   уезжает в `~/.local/state/rice-backup/<дата>/`.
+3. `./rice restore` — вернуть настройки ii.
+4. `hyprexpo-rebuild` — собрать плагин под текущую версию Hyprland.
 
-Скрипт:
+## Повседневно
 
-1. ставит `quickshell`, если его нет;
-2. делает `~/.config/quickshell` симлинком на `quickshell/` из этого репозитория;
-3. копирует конфиги Hyprland из `hypr/` в `~/.config/hypr` (с бэкапом);
-4. ставит и включает `quickshell.service` (systemd user);
-5. убирает `waybar` из автозапуска в `hyprland.lua` и перезагружает Hyprland.
+- Правки в `~/.config/hypr/custom/…` и прочем из таблицы сразу попадают в репо
+  (это симлинки) — остаётся `git commit`.
+- Поменял настройки в GUI ii → `./rice snapshot`, потом коммит.
+- `./rice status` — показать, что не связано или разошлось.
+- Hyprland может не заметить правку через симлинк — тогда `hyprctl reload`.
 
-## Откат
+## Обновление end-4
 
-```sh
-./uninstall.sh
-```
-
-Останавливает сервис и возвращает `waybar` в автозапуск. Конфиги waybar
-не удалялись, поэтому всё возвращается как было.
-
-## Управление
-
-| Действие | Как |
-|---|---|
-| Открыть панель | клик по модулю бара |
-| Закрыть панель | `Esc` или клик вне панели |
-| Календарь | клик по часам в баре или по карточке часов |
-| Микшер | клик по громкости |
-| btop | клик по CPU/RAM в баре или по карточке монитора |
-
-## Структура
-
-```
-docs/specs/   дизайн-спека
-docs/plans/   план реализации
-quickshell/   конфиг Quickshell (симлинк в ~/.config/quickshell)
-hypr/         конфиги Hyprland (копируются в ~/.config/hypr)
-systemd/      user-unit quickshell.service
-install.sh    установка
-uninstall.sh  откат на waybar
-```
-
-## Статус
-
-- [x] Дизайн утверждён — `docs/specs/2026-10-18-quickshell-rice-design.md`
-- [ ] Этап 1 — фундамент и бар
-- [ ] Этап 2 — карточки, док, панели
+end-4 не трогает `hypr/custom/`, но может перезаписать `hypridle.conf` и
+`hyprlock.conf`. После обновления — `./rice status` и `git diff`: если файл стал
+обычным, `./rice link` вернёт симлинк, а diff покажет, что принёс апстрим.
