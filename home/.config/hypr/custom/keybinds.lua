@@ -85,8 +85,3 @@ hl.bind("ALT + Tab", function()
         hl.dispatch(hl.dsp.window.bring_to_top())
     end
 end, { description = "Window: previous (Alt+Tab)" })
--- Alt+Shift+Tab — перебрать окна текущего стола
-hl.bind("ALT + SHIFT + Tab", function()
-    hl.dispatch(hl.dsp.window.cycle_next())
-    hl.dispatch(hl.dsp.window.bring_to_top())
-end, { description = "Window: cycle on workspace" })
