@@ -41,3 +41,15 @@ output_path = '~/.config/kitty/theme.conf'
 [templates.wofi]
 input_path = '~/.config/matugen/templates/wofi/style.css'
 output_path = '~/.config/wofi/style.css'
+
+[templates.btop]
+input_path = '~/.config/matugen/templates/btop/matugen.theme'
+output_path = '~/.config/btop/themes/matugen.theme'
+
+[templates.fastfetch]
+input_path = '~/.config/matugen/templates/fastfetch/config.jsonc'
+output_path = '~/.config/fastfetch/config.jsonc'
+
+[templates.starship]
+input_path = '~/.config/matugen/templates/starship/starship.toml'
+output_path = '~/.config/starship.toml'

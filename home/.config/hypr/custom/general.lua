@@ -46,7 +46,7 @@ local function matugen_color(name, fallback)
 end
 
 local primary  = matugen_color("primary", "e7bdb9")
-local accent2  = matugen_color("tertiary_container", "5d3f3e")
+local accent2  = matugen_color("tertiary", "faba6a")
 
 hl.config({
     general = {

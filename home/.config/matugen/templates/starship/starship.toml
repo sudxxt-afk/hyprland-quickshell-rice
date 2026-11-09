@@ -1,0 +1,39 @@
+# Цвета подставляет matugen из палитры обоев (шаблон в ~/.config/matugen/templates/starship)
+format = """
+[░▒▓]({{colors.primary.default.hex}})\
+[ 󱄛 ](bg:{{colors.primary.default.hex}} fg:{{colors.on_primary.default.hex}})\
+[](bg:{{colors.secondary_container.default.hex}} fg:{{colors.primary.default.hex}})\
+$directory\
+[](fg:{{colors.secondary_container.default.hex}} bg:{{colors.surface_container_high.default.hex}})\
+$git_branch\
+$git_status\
+[](fg:{{colors.surface_container_high.default.hex}} bg:{{colors.surface_container.default.hex}})\
+$time\
+[ ](fg:{{colors.surface_container.default.hex}})\
+$line_break$character"""
+
+[directory]
+style = "bg:{{colors.secondary_container.default.hex}} fg:{{colors.on_secondary_container.default.hex}} bold"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[git_branch]
+style = "bg:{{colors.surface_container_high.default.hex}} fg:{{colors.primary.default.hex}}"
+symbol = ""
+format = "[[ $symbol $branch ](fg:{{colors.primary.default.hex}} bg:{{colors.surface_container_high.default.hex}})]($style)"
+
+[git_status]
+style = "bg:{{colors.surface_container_high.default.hex}} fg:{{colors.error.default.hex}}"
+format = "[[($all_status$ahead_behind )](fg:{{colors.error.default.hex}} bg:{{colors.surface_container_high.default.hex}})]($style)"
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:{{colors.surface_container.default.hex}} fg:{{colors.on_surface.default.hex}}"
+format = "[[  $time ](fg:{{colors.on_surface.default.hex}} bg:{{colors.surface_container.default.hex}})]($style)"
+
+[character]
+disabled = false
+success_symbol = '[❯](bold fg:{{colors.primary.default.hex}})'
+error_symbol = '[❯](bold fg:{{colors.error.default.hex}})'
