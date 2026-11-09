@@ -63,4 +63,4 @@ output_path = '~/.vscode/extensions/rice.rice-matugen-1.0.0/themes/matugen-dark.
 [templates.telegram]
 input_path = '~/.config/matugen/templates/telegram/palette.json'
 output_path = '~/.local/state/rice/telegram-palette.json'
-post_hook = 'rice-telegram-theme'
+post_hook = '$HOME/.local/bin/rice-telegram-theme'

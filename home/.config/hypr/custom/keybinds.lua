@@ -87,4 +87,4 @@ hl.bind("ALT + Tab", function()
 end, { description = "Window: previous (Alt+Tab)" })
 
 -- Смена темы (обои + схема палитры) из меню
-hl.bind("SUPER + ALT + T", hl.dsp.exec_cmd("rice-theme"), { description = "Rice: switch theme" })
+hl.bind("SUPER + ALT + T", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-theme"), { description = "Rice: switch theme" })
