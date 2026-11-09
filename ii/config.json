@@ -42,7 +42,7 @@
     "wallpaperTheming": {
       "enableAppsAndShell": true,
       "enableQtApps": true,
-      "enableTerminal": true,
+      "enableTerminal": false,
       "terminalGenerationProps": {
         "forceDarkMode": false,
         "harmonizeThreshold": 100,
@@ -319,7 +319,7 @@
     "timeout": 1000
   },
   "osk": {
-    "layout": "English",
+    "layout": "Russian",
     "pinnedOnStartup": false
   },
   "overlay": {
