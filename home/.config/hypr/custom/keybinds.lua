@@ -87,3 +87,6 @@ hl.bind("ALT + Tab", function()
         hl.dispatch(hl.dsp.window.bring_to_top())
     end
 end, { description = "Window: previous (Alt+Tab)" })
+
+-- Выбор обоев с превью (селектор ii; Ctrl+Super+T тоже работает)
+hl.bind("SUPER + ALT + T", hl.dsp.global("quickshell:wallpaperSelectorToggle"), { description = "Wallpaper: picker" })
