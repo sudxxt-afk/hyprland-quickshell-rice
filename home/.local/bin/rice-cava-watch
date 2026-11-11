@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+#
+# rice-cava-watch — держит cava-виджет на столе только во время воспроизведения.
+#
+# Раньше `qs -c cava` висел всегда и занимал ~130 МБ (Quickshell + cava).
+# Теперь watcher опрашивает MPRIS раз в 2 с: Playing → запустить виджет,
+# Paused/Stopped → погасить его через RICE_CAVA_DELAY секунд (по умолчанию 10).
+#
+#   rice-cava-watch            # демон (запускается из custom/execs.lua)
+#   rice-cava-watch --once     # разово: запустить/погасить по текущему статусу
+#   RICE_CAVA_DELAY=30 …       # дольше не гасить после паузы
+#
+set -uo pipefail
+
+RUNTIME="${XDG_RUNTIME_DIR:-/tmp}/rice"
+PIDFILE="$RUNTIME/cava-watch.pid"
+DELAY="${RICE_CAVA_DELAY:-10}"
+
+mkdir -p "$RUNTIME"
+
+cava_running() { pgrep -f '^qs -c cava$' >/dev/null 2>&1; }
+start_cava()   { cava_running || setsid -f qs -c cava >/dev/null 2>&1; }
+stop_cava()    { pkill -f '^qs -c cava$' >/dev/null 2>&1 || true; }
+status()       { playerctl status 2>/dev/null || true; }
+
+sync_once() {
+    case "$(status)" in
+        Playing) start_cava ;;
+        *)       stop_cava ;;
+    esac
+}
+
+if [[ "${1:-}" == "--once" ]]; then
+    sync_once
+    exit 0
+fi
+
+command -v playerctl >/dev/null 2>&1 || exit 1
+
+# один watcher на сессию
+if [[ -f "$PIDFILE" ]]; then
+    old="$(<"$PIDFILE")"
+    if [[ "$old" != "$$" ]] && kill -0 "$old" 2>/dev/null; then
+        exit 0
+    fi
+fi
+printf '%s\n' "$$" >"$PIDFILE"
+trap 'rm -f "$PIDFILE"' EXIT
+
+last=""
+while :; do
+    st="$(status)"
+    if [[ "$st" != "$last" ]]; then
+        last="$st"
+        case "$st" in
+            Playing)
+                start_cava
+                ;;
+            Paused|Stopped)
+                # не дёргаем виджет на короткой паузе — гасим только если так и не заиграло
+                (
+                    sleep "$DELAY"
+                    [[ "$(status)" == "Playing" ]] || stop_cava
+                ) &
+                ;;
+        esac
+    fi
+    sleep 2
+done

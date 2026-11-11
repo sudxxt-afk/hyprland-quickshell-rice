@@ -6,7 +6,10 @@
 #   ./rice snapshot   # скопировать в репо то, что нельзя симлинкать (ii/config.json)
 #   ./rice restore    # обратное: ii/config.json → ~/.config/illogical-impulse
 #   ./rice status     # что не связано / разошлось
+#   ./rice doctor     # полная проверка: связи, Hyprland, matugen, зависимости
 #   ./rice vscode     # собрать и поставить тему VS Code (цвета пишет matugen)
+#   ./rice cava …     # cava-виджет: on | off | auto | status
+#   ./rice widget …   # виджеты: glyph|music on | off | status
 #
 set -euo pipefail
 
@@ -50,6 +53,18 @@ cmd_restore() {
     log "~/.config/illogical-impulse/config.json восстановлен из репо"
 }
 
+# ii/config.json нельзя симлинкать (ii перезаписывает файл), поэтому сравниваем
+# содержимое, а не байты: switchwall может переформатировать тот же JSON.
+ii_same() {
+    if command -v jq >/dev/null 2>&1 \
+        && jq -e . "$II_LIVE" >/dev/null 2>&1 \
+        && jq -e . "$II_REPO" >/dev/null 2>&1; then
+        [[ "$(jq -S . "$II_LIVE")" == "$(jq -S . "$II_REPO")" ]]
+    else
+        cmp -s "$II_LIVE" "$II_REPO"
+    fi
+}
+
 cmd_status() {
     local bad=0
     while read -r rel; do
@@ -57,11 +72,153 @@ cmd_status() {
             echo "не связан: ~/$rel"; bad=1
         fi
     done < <(files)
-    if ! cmp -s "$II_LIVE" "$II_REPO"; then
+    if ! ii_same; then
         echo "разошёлся: ii/config.json (./rice snapshot)"; bad=1
     fi
     (( bad )) || log "Всё связано и совпадает"
 }
+
+# ── doctor: проверки без изменений системы ─────────────────────────────
+cmd_doctor() {
+    local fails=0 warns=0 total=0 bad=0
+    local green=$'\033[1;32m' yellow=$'\033[1;33m' red=$'\033[1;31m' off=$'\033[0m'
+    section() { printf '\n\033[1;35m::\033[0m %s\n' "$*"; }
+    ok()   { printf '  %sok%s   %s\n' "$green" "$off" "$*"; }
+    warn() { printf '  %swarn%s %s\n' "$yellow" "$off" "$*"; warns=$((warns + 1)); }
+    fail() { printf '  %sFAIL%s %s\n' "$red" "$off" "$*"; fails=$((fails + 1)); }
+
+    section "Симлинки"
+    while read -r rel; do
+        total=$((total + 1))
+        if [[ "$(readlink -f "$HOME/$rel" 2>/dev/null)" != "$SRC/$rel" ]]; then
+            fail "не связан: ~/$rel"; bad=$((bad + 1))
+        fi
+    done < <(files)
+    (( bad == 0 )) && ok "все $total файлов связаны"
+
+    section "ii"
+    if ii_same; then
+        ok "ii/config.json совпадает с репо"
+    else
+        warn "ii/config.json разошёлся — ./rice snapshot"
+    fi
+
+    section "Hyprland"
+    if command -v hyprctl >/dev/null 2>&1 && [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+        local errs hv pv plugins
+        errs=$(hyprctl configerrors 2>/dev/null || true)
+        if [[ -z "${errs//[[:space:]]/}" ]]; then
+            ok "hyprctl configerrors пуст"
+        else
+            fail "hyprctl configerrors: ${errs//$'\n'/ }"
+        fi
+
+        plugins=$(hyprctl plugin list 2>/dev/null || true)
+        if grep -qi 'hyprexpo' <<<"$plugins"; then
+            ok "hyprexpo загружен"
+            hv=$(hyprctl version 2>/dev/null | sed -n 's/^Hyprland \([0-9][0-9.]*\).*/\1/p' | head -1)
+            pv=$(sed -n 's/^[[:space:]]*Version: v\([0-9][0-9.]*\).*/\1/p' <<<"$plugins" | head -1)
+            if [[ -n "$hv" && -n "$pv" && "$hv" != "$pv" ]]; then
+                warn "hyprexpo v$pv ≠ Hyprland $hv — пересобрать: hyprexpo-rebuild"
+            fi
+        else
+            warn "hyprexpo не загружен — hyprexpo-rebuild"
+        fi
+    else
+        warn "Hyprland не запущен — проверки конфига пропущены"
+    fi
+
+    section "Сгенерированное matugen"
+    local f
+    for f in \
+        "$HOME/.local/state/quickshell/user/generated/colors.json" \
+        "$HOME/.config/kitty/theme.conf" \
+        "$HOME/.config/rofi/colors.rasi" \
+        "$HOME/.config/hypr/hyprlock/colors.conf" \
+        "$HOME/.config/fuzzel/fuzzel_theme.ini" \
+        "$HOME/.config/btop/themes/matugen.theme" \
+        "$HOME/.config/fastfetch/config.jsonc" \
+        "$HOME/.config/starship.toml" \
+        "$HOME/.config/mako/colors.conf" \
+        "$HOME/.vscode/extensions/rice.rice-matugen-1.0.0/themes/matugen-dark.json" \
+        "$HOME/.local/share/rice/rice.tdesktop-theme"; do
+        if [[ -s "$f" ]]; then ok "${f#"$HOME"/}"; else warn "нет: ${f#"$HOME"/}"; fi
+    done
+
+    section "Зависимости"
+    local c
+    for c in qs matugen rofi cliphist hyprshot cava hypridle kitty qalc wtype playerctl jq notify-send; do
+        if command -v "$c" >/dev/null 2>&1; then ok "$c"; else fail "нет: $c"; fi
+    done
+
+    section "Итог"
+    if (( fails )); then
+        printf '  %s%d FAIL%s, %d warn\n' "$red" "$fails" "$off" "$warns"
+        return 1
+    fi
+    printf '  %sвсё ок%s (%d warn)\n' "$green" "$off" "$warns"
+}
+
+# ── cava: ручное управление виджетом ───────────────────────────────────
+cmd_cava() {
+    exec "$REPO/home/.local/bin/rice-cava" "$@"
+}
+
+# ── widget: тумблер десктоп-виджетов (правит custom/execs.lua) ──────────
+cmd_widget() {
+    local name="${1:-}" action="${2:-status}" svc
+    case "$name" in
+        glyph|chaldea|chaldea-glyph) svc="chaldea-glyph" ;;
+        music|player|music-player)   svc="music-player" ;;
+        *)
+            echo "usage: ./rice widget <glyph|music> <on|off|status>" >&2
+            return 1
+            ;;
+    esac
+
+    local f="$SRC/.config/hypr/custom/execs.lua"
+    local line
+    line=$(grep -m1 "qs -c ${svc}\"" "$f" || true)
+    if [[ -z "$line" ]]; then
+        echo "в $f нет строки qs -c $svc" >&2
+        return 1
+    fi
+
+    local state=on
+    [[ "$line" =~ ^[[:space:]]*-- ]] && state=off
+
+    case "$action" in
+        status)
+            echo "$name: $state"
+            return 0
+            ;;
+        on|off)
+            python3 - "$f" "$svc" "$action" <<'PY'
+import re, sys
+path, svc, action = sys.argv[1:]
+src = open(path).read()
+pat = re.compile(r'^([ \t]*)(--[ \t]*)?(hl\.exec_cmd\("qs -c ' + re.escape(svc) + r'"\))', re.M)
+m = pat.search(src)
+if not m:
+    sys.exit(f"no line for {svc}")
+line = f'{m.group(1)}{"" if action == "on" else "-- "}{m.group(3)}'
+open(path, "w").write(src[:m.start()] + line + src[m.end():])
+PY
+            if [[ "$action" == on ]]; then
+                pgrep -f "^qs -c ${svc}$" >/dev/null 2>&1 || setsid -f qs -c "$svc" >/dev/null 2>&1
+                log "виджет $name включён (qs -c $svc)"
+            else
+                pkill -f "^qs -c ${svc}$" >/dev/null 2>&1 || true
+                log "виджет $name выключен"
+            fi
+            ;;
+        *)
+            echo "usage: ./rice widget <glyph|music> <on|off|status>" >&2
+            return 1
+            ;;
+    esac
+}
+
 
 # VS Code ведёт реестр расширений, поэтому тему ставим штатно из VSIX.
 # Файл темы внутри установленного расширения дальше перезаписывает matugen.
@@ -114,6 +271,9 @@ case "${1:-}" in
     snapshot) cmd_snapshot ;;
     restore)  cmd_restore ;;
     status)   cmd_status ;;
+    doctor)   cmd_doctor ;;
     vscode)   cmd_vscode ;;
-    *) sed -n '3,10p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+    cava)     shift || true; cmd_cava "$@" ;;
+    widget)   shift || true; cmd_widget "$@" ;;
+    *) sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

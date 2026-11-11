@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# rice-cava — ручное управление cava-виджетом на столе.
+#
+#   rice-cava            # переключить (есть/нет)
+#   rice-cava on|off     # принудительно; watcher при этом останавливается
+#   rice-cava auto       # вернуть автоматику (только при Playing)
+#   rice-cava status     # кто запущен
+#
+set -uo pipefail
+
+RUNTIME="${XDG_RUNTIME_DIR:-/tmp}/rice"
+PIDFILE="$RUNTIME/cava-watch.pid"
+WATCHER="$(dirname "$(readlink -f "$0")")/rice-cava-watch"
+
+watcher_running() {
+    [[ -f "$PIDFILE" ]] && kill -0 "$(<"$PIDFILE")" 2>/dev/null
+}
+cava_running() { pgrep -f '^qs -c cava$' >/dev/null 2>&1; }
+
+stop_watcher() {
+    if watcher_running; then
+        kill "$(<"$PIDFILE")" 2>/dev/null || true
+        rm -f "$PIDFILE"
+    fi
+}
+
+start_cava() {
+    cava_running || setsid -f qs -c cava >/dev/null 2>&1
+}
+stop_cava() { pkill -f '^qs -c cava$' >/dev/null 2>&1 || true; }
+
+case "${1:-toggle}" in
+    on)
+        stop_watcher
+        start_cava
+        echo "cava: включена (автоматика выключена)"
+        ;;
+    off)
+        stop_watcher
+        stop_cava
+        echo "cava: выключена (автоматика выключена)"
+        ;;
+    auto)
+        stopped=no
+        cava_running || stopped=yes
+        stop_cava
+        setsid -f "$WATCHER" >/dev/null 2>&1
+        if [[ "$stopped" == yes ]]; then
+            echo "cava: автоматика включена (сейчас нет воспроизведения)"
+        else
+            echo "cava: автоматика включена"
+        fi
+        ;;
+    status)
+        if watcher_running; then echo "автоматика: работает"; else echo "автоматика: выключена"; fi
+        if cava_running; then echo "виджет: запущен"; else echo "виджет: нет"; fi
+        ;;
+    toggle|*)
+        if cava_running; then "$0" off; else "$0" on; fi
+        ;;
+esac
