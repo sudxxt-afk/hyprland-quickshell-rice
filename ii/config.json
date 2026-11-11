@@ -80,7 +80,7 @@
       "workspaceZoom": 1.07
     },
     "thumbnailPath": "",
-    "wallpaperPath": "/home/kudensik/Изображения/Wallpapers/mono_a_car_in_a_parking_garage.jpg",
+    "wallpaperPath": "/home/kudensik/Изображения/Wallpapers/mono_a_street_lights_at_night.jpg",
     "widgets": {
       "clock": {
         "cookie": {
@@ -119,8 +119,8 @@
         "showOnlyWhenLocked": false,
         "style": "cookie",
         "styleLocked": "cookie",
-        "x": 715,
-        "y": 525
+        "x": 235,
+        "y": 535
       },
       "weather": {
         "enable": true,

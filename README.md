@@ -4,23 +4,22 @@
 (шелл illogical-impulse, «ii») на Fedora + Hyprland 0.57 (Lua-конфиг).
 
 Сам end-4 тут не хранится — только то, что я поменял или добавил.
-Старый самописный шелл на Quickshell — в ветке `legacy`.
 
 ## Что где
 
 | в репо | в системе | что это |
 | --- | --- | --- |
 | `home/.config/hypr/custom/*.lua` | `~/.config/hypr/custom/` | мои настройки поверх end-4: ввод, рамки/тени/анимации, бинды, правила, hyprexpo |
-| `home/.config/hypr/*.conf`, `lock/`, `scripts/` | `~/.config/hypr/` | hyprlock, hypridle, свои скрипты |
+| `home/.config/hypr/*.conf`, `hyprlock/`, `scripts/` | `~/.config/hypr/` | hyprlock (и его скрипты), hypridle, свои скрипты |
 | `home/.config/matugen/` | `~/.config/matugen/` | шаблоны палитры из обоев |
-| `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и уведомления |
+| `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и запасные уведомления |
 | `home/.config/quickshell/{cava,chaldea-glyph}` | `~/.config/quickshell/` | десктоп-виджеты |
-| `home/.local/bin/` | `~/.local/bin/` | `rice-launcher`, `rice-telegram-theme`, `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
+| `home/.local/bin/` | `~/.local/bin/` | `rice-*` (`launcher`, `cava`, `cava-watch`, `gamemode`, `telegram-theme`), `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
 | `ii/config.json` | `~/.config/illogical-impulse/config.json` | настройки ii (копией, не симлинком) |
 
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
 `fuzzel/fuzzel_theme.ini`, `hypr/hyprland/colors.lua`, `hypr/hyprlock/colors.conf`,
-`gtk-*/gtk.css`, `btop/themes/matugen.theme`, `fastfetch/config.jsonc`,
+`mako/colors.conf`, `gtk-*/gtk.css`, `btop/themes/matugen.theme`, `fastfetch/config.jsonc`,
 `starship.toml`, тема VS Code. Они пересоздаются из шаблонов при смене обоев — править надо
 шаблон в `matugen/templates/`, а не результат.
 
@@ -41,8 +40,12 @@
 | --- | --- |
 | `Super + `` ` `` | обзор рабочих столов (hyprexpo) |
 | `Super + Z` | выпадающий терминал (scratchpad) |
+| `Super + Alt + S` | выпадающий btop (свой special-воркспейс) |
 | `Super + Alt + T` | выбор обоев с превью (селектор ii; палитра пересчитывается сама) |
+| `Super + Alt + C` | cava-виджет на столе: вкл/выкл |
+| `Super + Shift + G` | игровой режим: анимации, блюр и тени выкл/вкл |
 | `Alt + Tab` | к предыдущему окну (через столы), повторно — обратно |
+| `Alt + `` ` `` | список окон (rofi) |
 | одиночный `Super` | ничего (поиск/обзор ii отключён; лаунчер — `Super + Space`) |
 | щипок 4 пальцами | обзор рабочих столов (hyprexpo) |
 
@@ -51,6 +54,22 @@
 - Одно окно на столе — без отступов, рамки и скругления; два и больше — как обычно.
 - Выпадающий терминал запускается при первом нажатии и дальше только прячется/показывается.
 - Ночной режим — в ii (`light.night`: авто с 19:00 до 06:30, 5000K).
+
+### Память
+
+- cava-виджет (`qs -c cava`) запускается только когда играет музыка:
+  `rice-cava-watch` опрашивает MPRIS раз в 2 с, на паузе гасит виджет через 10 с.
+  Ручное управление — `rice cava on|off|auto|status` (или `Super+Alt+C`).
+- chaldea-glyph и music-player по умолчанию выключены (~160 и ~180 МБ).
+  Тумблер — `rice widget glyph|music on|off|status`; он правит строки между
+  маркерами `rice:widgets` в `custom/execs.lua`, так что состояние видно в `git diff`.
+- Игровой режим — `rice-gamemode` или `Super+Shift+G`: анимации, блюр и тени
+  выключаются на лету; повторное нажатие делает `hyprctl reload` и возвращает всё.
+
+### Проверка
+
+`./rice doctor` — симлинки, `hyprctl configerrors`, версия hyprexpo, сгенерированные
+файлы matugen и зависимости. Систему не меняет; код возврата 1, если есть FAIL.
 
 Отдельные репозитории (не здесь): `~/.config/quickshell/chaldea`,
 `~/.config/quickshell/music-player`.
@@ -69,6 +88,8 @@
   (это симлинки) — остаётся `git commit`.
 - Поменял настройки в GUI ii → `./rice snapshot`, потом коммит.
 - `./rice status` — показать, что не связано или разошлось.
+- `./rice doctor` — полная проверка (связи, Hyprland, matugen, зависимости).
+- `./rice widget glyph|music on|off` — десктоп-виджеты; `./rice cava on|off|auto` — cava.
 - Hyprland может не заметить правку через симлинк — тогда `hyprctl reload`.
 
 ## Обновление end-4
