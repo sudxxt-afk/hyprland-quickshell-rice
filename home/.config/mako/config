@@ -1,10 +1,9 @@
-# mako — уведомления в стиле Catppuccin Mocha
+# mako — запасные уведомления (основные рисует ii).
+# Цвета приходят из matugen: ~/.config/mako/colors.conf (шаблон в matugen/templates/mako).
 
+include=~/.config/mako/colors.conf
 font=JetBrainsMono Nerd Font 10
-background-color=#1e1e2eE6
-text-color=#cdd6f4
 border-size=2
-border-color=#cba6f7
 border-radius=12
 padding=10
 margin=8
@@ -15,11 +14,7 @@ default-timeout=5000
 max-visible=3
 
 [urgency=critical]
-border-color=#f38ba8
 default-timeout=0
-
-[urgency=low]
-border-color=#6c7086
 
 # Скрывать всплывающие уведомления от Telegram Desktop
 [app-name="Telegram Desktop"]
