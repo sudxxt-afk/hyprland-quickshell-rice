@@ -90,3 +90,18 @@ end, { description = "Window: previous (Alt+Tab)" })
 
 -- Выбор обоев с превью (селектор ii; Ctrl+Super+T тоже работает)
 hl.bind("SUPER + ALT + T", hl.dsp.global("quickshell:wallpaperSelectorToggle"), { description = "Wallpaper: picker" })
+
+------------------------------------------------------------------------
+--  RICE: игровой режим, btop-скретчпад, список окон, cava
+------------------------------------------------------------------------
+-- SUPER+SHIFT+G — анимации/блюр/тени выключить-включить (rice-gamemode)
+hl.bind("SUPER + SHIFT + G", hl.dsp.exec_cmd("rice-gamemode"), { description = "Gamemode: toggle" })
+
+-- SUPER+ALT+S — системный монитор btop на своём special-воркспейсе
+hl.bind("SUPER + ALT + S", scratchpad("btop", "kitty --class scratchpad-btop -e btop"), { description = "Scratchpad: btop" })
+
+-- ALT+` — список окон в rofi (Alt+Tab по-прежнему «назад»)
+hl.bind("ALT + grave", hl.dsp.exec_cmd(launcher .. " window"), { description = "Windows: switcher (rofi)" })
+
+-- SUPER+ALT+C — тумблер cava-виджета (rice cava — то же из терминала)
+hl.bind("SUPER + ALT + C", hl.dsp.exec_cmd("rice-cava"), { description = "Cava: toggle" })

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#
+# rice-gamemode — тумблер игрового режима.
+#
+# Включение: анимации, блюр и тени выключаются на лету (Lua-диспетчер Hyprland).
+# Выключение: `hyprctl reload` — конфиг перечитывается и возвращает всё как было.
+#
+#   rice-gamemode          # переключить
+#   rice-gamemode status   # показать состояние
+#
+set -uo pipefail
+
+STATE="${XDG_RUNTIME_DIR:-/tmp}/rice/gamemode"
+mkdir -p "$(dirname "$STATE")"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send -a "Gamemode" -t 2500 "$1" "$2"
+    return 0
+}
+
+enabled() { [[ -f "$STATE" ]]; }
+
+case "${1:-toggle}" in
+    status)
+        if enabled; then echo "включён"; else echo "выключен"; fi
+        ;;
+    on)
+        enabled && exit 0
+        hyprctl dispatch 'function() hl.config({animations={enabled=false}, decoration={blur={enabled=false}, shadow={enabled=false}}}) end' >/dev/null
+        : >"$STATE"
+        notify "Игровой режим включён" "анимации, блюр и тени выключены"
+        ;;
+    off)
+        enabled || exit 0
+        hyprctl reload >/dev/null
+        rm -f "$STATE"
+        notify "Игровой режим выключен" "анимации, блюр и тени вернулись"
+        ;;
+    toggle|*)
+        if enabled; then "$0" off; else "$0" on; fi
+        ;;
+esac

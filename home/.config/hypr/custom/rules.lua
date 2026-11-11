@@ -100,6 +100,7 @@ hl.window_rule({
 ------------------------
 local scratchpads = {
     { ws = "term", class = "^(scratchpad-term)$",         size = { "(monitor_w*0.70)", "(monitor_h*0.60)" } },
+    { ws = "btop", class = "^(scratchpad-btop)$",         size = { "(monitor_w*0.80)", "(monitor_h*0.70)" } },
 }
 for _, s in ipairs(scratchpads) do
     hl.window_rule({
