@@ -14,7 +14,7 @@
 | `home/.config/matugen/` | `~/.config/matugen/` | шаблоны палитры из обоев |
 | `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и запасные уведомления |
 | `home/.config/quickshell/{cava,chaldea-glyph}` | `~/.config/quickshell/` | десктоп-виджеты |
-| `home/.local/bin/` | `~/.local/bin/` | `rice-*` (`launcher`, `cava`, `cava-watch`, `gamemode`, `telegram-theme`), `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
+| `home/.local/bin/` | `~/.local/bin/` | `rice-*` (`launcher`, `spawn`, `cava`, `cava-watch`, `gamemode`, `telegram-theme`), `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
 | `ii/config.json` | `~/.config/illogical-impulse/config.json` | настройки ii (копией, не симлинком) |
 
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
@@ -28,7 +28,8 @@
 - Палитра: ii, схема `scheme-monochrome` — серо-белая, без оттенка от обоев
   (`ii/config.json` → `appearance.palette.type`). Цветные варианты:
   `scheme-content` (оттенок обоев), `scheme-fidelity` (контрастнее).
-- Рамка окна: градиент `primary` → `outline` (в монохроме белый → серый).
+- Рамка окна: градиент `primary` → `outline` (в монохроме белый → серый), снаружи
+  плотное тёмное кольцо (тень range 4, offset 0) — «двойная рамка» как в lilith.
 - Перегенерировать без смены обоев:
   `~/.config/quickshell/ii/scripts/colors/switchwall.sh --noswitch`.
 - Курсор `Bibata-Modern-Classic` 24 — в env Hyprland, GTK `settings.ini`,
@@ -46,6 +47,7 @@
 | `Super + Shift + G` | игровой режим: анимации, блюр и тени выкл/вкл |
 | `Alt + Tab` | к предыдущему окну (через столы), повторно — обратно |
 | `Alt + `` ` `` | список окон (rofi) |
+| `Super + Shift + Space` | spawn region: окно в нарисованной области (идея из lilith) |
 | одиночный `Super` | ничего (поиск/обзор ii отключён; лаунчер — `Super + Space`) |
 | щипок 4 пальцами | обзор рабочих столов (hyprexpo) |
 
@@ -53,6 +55,10 @@
   полупрозрачным: терминалы всегда, редакторы и Nautilus — когда не в фокусе.
 - Одно окно на столе — без отступов, рамки и скругления; два и больше — как обычно.
 - Выпадающий терминал запускается при первом нажатии и дальше только прячется/показывается.
+- Spawn region (`rice-spawn`): рисуешь область мышью (slurp, цвета из палитры) →
+  выбираешь приложение в rofi → окно открывается floating ровно в области.
+  Если приложение открывает окно в уже существующем процессе (chromium, VS Code),
+  скрипт сам находит новое окно и ставит его в область. Escape на любом шаге — отмена.
 - Ночной режим — в ii (`light.night`: авто с 19:00 до 06:30, 5000K).
 
 ### Память

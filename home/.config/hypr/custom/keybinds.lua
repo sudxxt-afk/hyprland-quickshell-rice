@@ -105,3 +105,7 @@ hl.bind("ALT + grave", hl.dsp.exec_cmd(launcher .. " window"), { description = "
 
 -- SUPER+ALT+C — тумблер cava-виджета (rice cava — то же из терминала)
 hl.bind("SUPER + ALT + C", hl.dsp.exec_cmd("rice-cava"), { description = "Cava: toggle" })
+
+-- SUPER+SHIFT+Space — spawn region (идея из lilith): рисуешь мышью область,
+-- выбираешь приложение в rofi — окно открывается floating ровно в ней. Escape — отмена.
+hl.bind("SUPER + SHIFT + space", hl.dsp.exec_cmd("rice-spawn"), { description = "Spawn: window in drawn region" })

@@ -66,12 +66,13 @@ hl.config({
             passes = 2,
         },
         shadow = {
-            range          = 30,
+            -- «двойная рамка» как в lilith: внутри градиентный бордер, снаружи
+            -- плотное тёмное кольцо вместо мягкой тени (range 30 давал ореол)
+            range          = 4,
             render_power   = 3,
-            offset         = { 0, 4 },
-            -- тёмная тень, а не свечение цветом primary: в монохроме оно было белым ореолом
-            color          = "rgba(00000077)",
-            color_inactive = "rgba(00000055)",
+            offset         = { 0, 0 },
+            color          = "rgba(000000aa)",
+            color_inactive = "rgba(00000066)",
         },
         dim_strength = 0.12,
     },
