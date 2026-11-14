@@ -14,7 +14,7 @@
 | `home/.config/matugen/` | `~/.config/matugen/` | шаблоны палитры из обоев |
 | `home/.config/kitty/kitty.conf`, `mako/config` | `~/.config/…` | терминал и запасные уведомления |
 | `home/.config/quickshell/{cava,chaldea-glyph}` | `~/.config/quickshell/` | десктоп-виджеты |
-| `home/.local/bin/` | `~/.local/bin/` | `rice-*` (`launcher`, `spawn`, `cava`, `cava-watch`, `gamemode`, `telegram-theme`), `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
+| `home/.local/bin/` | `~/.local/bin/` | `rice-*` (`launcher`, `cava`, `cava-watch`, `gamemode`, `telegram-theme`), `fedora-slim`, `greetd-setup`, `hyprexpo-rebuild` |
 | `ii/config.json` | `~/.config/illogical-impulse/config.json` | настройки ii (копией, не симлинком) |
 
 В репо **нет** файлов, которые генерирует matugen: `kitty/theme.conf`,
@@ -47,8 +47,6 @@
 | `Super + Shift + G` | игровой режим: анимации, блюр и тени выкл/вкл |
 | `Alt + Tab` | к предыдущему окну (через столы), повторно — обратно |
 | `Alt + `` ` `` | список окон (rofi) |
-| ЛКМ-драг по пустому столу | spawn region: kitty открывается в нарисованной области (без хоткея) |
-| `Super + Shift + Space` | spawn region с выбором приложения (slurp + rofi) |
 | одиночный `Super` | ничего (поиск/обзор ii отключён; лаунчер — `Super + Space`) |
 | щипок 4 пальцами | обзор рабочих столов (hyprexpo) |
 
@@ -56,14 +54,6 @@
   полупрозрачным: терминалы всегда, редакторы и Nautilus — когда не в фокусе.
 - Одно окно на столе — без отступов, рамки и скругления; два и больше — как обычно.
 - Выпадающий терминал запускается при первом нажатии и дальше только прячется/показывается.
-- Spawn region (идея из lilith): зажми ЛКМ на пустом месте стола, растяни область
-  и отпусти — в ней откроется kitty (`custom/keybinds.lua`, без хоткея и выбора
-  приложения). Клики по окнам, панели и виджетам проходят как обычно; драг,
-  начатый внутри окна, область не рисует. Вариант с выбором приложения:
-  `Super + Shift + Space` → `rice-spawn` (slurp в цветах палитры → rofi → окно
-  floating в области; если приложение открывает окно в уже существующем процессе
-  (chromium, VS Code), скрипт сам находит новое окно и ставит его в область).
-  Escape на любом шаге — отмена.
 - Ночной режим — в ii (`light.night`: авто с 19:00 до 06:30, 5000K).
 
 ### Память
