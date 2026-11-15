@@ -2,9 +2,9 @@
 hl.env("XDG_MENU_PREFIX", "gnome-")
 
 -- Один курсор везде: Hyprland, XWayland, GTK (gsettings/settings.ini), ~/.icons/default
-hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("XCURSOR_THEME", "Bibata-Blood")
 hl.env("XCURSOR_SIZE", "24")
-hl.env("HYPRCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("HYPRCURSOR_THEME", "Bibata-Blood")
 hl.env("HYPRCURSOR_SIZE", "24")
 
 -- ~/.local/bin (rice-theme, rice-telegram-theme, …) — сессия gdm его в PATH не кладёт
