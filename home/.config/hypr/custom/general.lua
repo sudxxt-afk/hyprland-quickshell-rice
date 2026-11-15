@@ -45,8 +45,10 @@ local function matugen_color(name, fallback)
     return json:match('"' .. name .. '"%s*:%s*"#(%x%x%x%x%x%x)"') or fallback
 end
 
-local primary  = matugen_color("primary", "e7bdb9")
-local accent2  = matugen_color("outline", "919191")
+-- Кроваво-красная рамка: фиксированный градиент (яркий кровавый -> глубокий бордовый),
+-- намеренно не из палитры matugen — чтобы рамка оставалась кровавой при любых обоях.
+local blood_bright = "c41e2a"
+local blood_deep   = "6e0a10"
 
 hl.config({
     general = {
@@ -55,7 +57,7 @@ hl.config({
         border_size = 2,
         col = {
             -- статичный градиент: вращающийся (borderangle loop) зря грузит iGPU
-            active_border   = { colors = { "rgba(" .. primary .. "ee)", "rgba(" .. accent2 .. "ee)" }, angle = 45 },
+            active_border   = { colors = { "rgba(" .. blood_bright .. "ee)", "rgba(" .. blood_deep .. "ee)" }, angle = 45 },
             inactive_border = "rgba(00000000)",
         },
         snap = { window_gap = 6, monitor_gap = 14 },
