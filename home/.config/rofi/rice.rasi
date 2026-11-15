@@ -17,6 +17,7 @@ window {
     border-radius:    18px;
     border-color:     @border;
     background-color: @bg;
+    background-image: url("/home/kudensik/Pictures/Wallpapers/ascii_blood_chan_faint.png", both);
 }
 
 mainbox {
