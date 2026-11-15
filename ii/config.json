@@ -31,7 +31,7 @@
     },
     "palette": {
       "accentColor": "",
-      "type": "scheme-monochrome"
+      "type": "scheme-fidelity"
     },
     "transparency": {
       "automatic": true,
@@ -80,7 +80,7 @@
       "workspaceZoom": 1.07
     },
     "thumbnailPath": "",
-    "wallpaperPath": "/home/kudensik/Изображения/Wallpapers/mono_a_street_lights_at_night.jpg",
+    "wallpaperPath": "/home/kudensik/Pictures/Wallpapers/ascii_blood_chan.png",
     "widgets": {
       "clock": {
         "cookie": {
